@@ -90,6 +90,12 @@ export default {
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)'
 			},
+			width: {
+				'70': '17.5rem'
+			},
+			margin: {
+				'70': '17.5rem'
+			},
 			keyframes: {
 				'accordion-down': {
 					from: {

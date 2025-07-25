@@ -3,7 +3,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, Menu, X } from 'lucide-react';
 
-const Navbar = () => {
+interface NavbarProps {
+  onAuthClick: () => void;
+}
+
+const Navbar = ({ onAuthClick }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -71,7 +75,11 @@ const Navbar = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <Button variant="ghost" className="text-foreground hover:text-primary">
+              <Button 
+                variant="ghost" 
+                className="text-foreground hover:text-primary"
+                onClick={onAuthClick}
+              >
                 Login
               </Button>
             </motion.div>
@@ -80,7 +88,10 @@ const Navbar = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 }}
             >
-              <Button className="glow-button">
+              <Button 
+                className="glow-button"
+                onClick={onAuthClick}
+              >
                 Get Started
               </Button>
             </motion.div>
@@ -119,10 +130,17 @@ const Navbar = () => {
                 </a>
               ))}
               <div className="pt-4 space-y-2">
-                <Button variant="ghost" className="w-full">
+                <Button 
+                  variant="ghost" 
+                  className="w-full"
+                  onClick={onAuthClick}
+                >
                   Login
                 </Button>
-                <Button className="w-full glow-button">
+                <Button 
+                  className="w-full glow-button"
+                  onClick={onAuthClick}
+                >
                   Get Started
                 </Button>
               </div>

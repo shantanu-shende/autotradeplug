@@ -3,7 +3,11 @@ import { useInView } from 'react-intersection-observer';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Play, TrendingUp, Zap, Shield } from 'lucide-react';
 
-const HeroSection = () => {
+interface HeroSectionProps {
+  onAuthClick: () => void;
+}
+
+const HeroSection = ({ onAuthClick }: HeroSectionProps) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -70,7 +74,10 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button className="glow-button text-lg px-8 py-4 group">
+            <Button 
+              className="glow-button text-lg px-8 py-4 group"
+              onClick={onAuthClick}
+            >
               Get Started Free
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
