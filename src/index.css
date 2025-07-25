@@ -2,41 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* AutoTradePlug Design System - Navy Blue & Modern Trading Theme */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 222 25% 8%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 225 15% 12%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 225 15% 12%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 225 15% 18%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 225 15% 15%;
+    --muted-foreground: 215 20% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 225 15% 18%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
 
-    --radius: 0.5rem;
+    --warning: 38 92% 50%;
+    --warning-foreground: 225 15% 12%;
+
+    --border: 225 15% 20%;
+    --input: 225 15% 20%;
+    --ring: 217 91% 60%;
+
+    --radius: 0.75rem;
+    
+    /* Trading specific colors */
+    --bull: 142 76% 36%;
+    --bear: 0 84% 60%;
+    --profit: 142 76% 36%;
+    --loss: 0 84% 60%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(225 91% 70%));
+    --gradient-dark: linear-gradient(135deg, hsl(225 15% 8%), hsl(225 15% 15%));
+    --gradient-glow: linear-gradient(135deg, hsl(217 91% 60% / 0.1), hsl(225 91% 70% / 0.1));
+    
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsl(217 91% 60% / 0.15);
+    --shadow-card: 0 10px 30px -10px hsl(225 15% 5% / 0.5);
+    --shadow-trading: 0 20px 40px -10px hsl(217 91% 60% / 0.2);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -91,6 +115,109 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer components {
+  /* Trading Card Components */
+  .trading-card {
+    @apply bg-card border border-border rounded-xl p-6 
+           shadow-[var(--shadow-card)] 
+           transition-[var(--transition-smooth)]
+           hover:shadow-[var(--shadow-trading)]
+           hover:border-primary/20;
+  }
+  
+  .strategy-card {
+    @apply trading-card
+           hover:scale-[1.02] 
+           hover:bg-gradient-to-br 
+           hover:from-card 
+           hover:to-card/80
+           cursor-pointer;
+  }
+  
+  .glow-button {
+    @apply bg-gradient-to-r from-primary to-primary/80
+           text-primary-foreground
+           px-8 py-4 rounded-xl font-semibold
+           shadow-[var(--shadow-glow)]
+           transition-[var(--transition-bounce)]
+           hover:scale-105 hover:shadow-[var(--shadow-trading)]
+           active:scale-95;
+  }
+  
+  .glass-panel {
+    @apply bg-card/20 backdrop-blur-xl border border-border/30
+           rounded-xl p-6 shadow-[var(--shadow-card)];
+  }
+  
+  /* Performance Indicators */
+  .bull-color {
+    @apply text-[hsl(var(--bull))];
+  }
+  
+  .bear-color {
+    @apply text-[hsl(var(--bear))];
+  }
+  
+  .profit-bg {
+    @apply bg-[hsl(var(--profit)/0.1)] text-[hsl(var(--profit))] border-[hsl(var(--profit)/0.2)];
+  }
+  
+  .loss-bg {
+    @apply bg-[hsl(var(--loss)/0.1)] text-[hsl(var(--loss))] border-[hsl(var(--loss)/0.2)];
+  }
+
+  /* Animated Elements */
+  .floating {
+    animation: floating 3s ease-in-out infinite;
+  }
+  
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  
+  .slide-up {
+    animation: slide-up 0.6s ease-out forwards;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent;
+  }
+  
+  .border-gradient {
+    border: 1px solid transparent;
+    background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+                var(--gradient-primary) border-box;
+  }
+}
+
+/* Custom Animations */
+@keyframes floating {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { 
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 40px hsl(var(--primary) / 0.3);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
