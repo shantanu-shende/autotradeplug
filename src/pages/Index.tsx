@@ -6,7 +6,7 @@ import AuthModal from '@/components/auth/AuthModal';
 import { OnboardingForm } from '@/components/auth/OnboardingForm';
 
 const Index = () => {
-  const { user, session, loading } = useAuth();
+  const { user, session, loading, signOut } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const handleAuthSuccess = () => {
@@ -14,7 +14,6 @@ const Index = () => {
   };
 
   const handleLogout = async () => {
-    const { signOut } = useAuth();
     await signOut();
   };
 

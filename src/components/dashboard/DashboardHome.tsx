@@ -3,33 +3,40 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TrendingUp, TrendingDown, Activity, DollarSign, Bot, AlertTriangle } from 'lucide-react';
+import { useCountUp } from '@/hooks/useCountUp';
 
 const DashboardHome = () => {
+  // Animated values using useCountUp hook
+  const portfolioValue = useCountUp({ end: 24580, duration: 2500, prefix: '$', suffix: '.00' });
+  const activeStrategiesCount = useCountUp({ end: 8, duration: 1500 });
+  const todaysPnl = useCountUp({ end: 342.5, duration: 2000, prefix: '+$', decimals: 2 });
+  const winRate = useCountUp({ end: 73.2, duration: 2200, suffix: '%', decimals: 1 });
+
   const stats = [
     {
       title: 'Portfolio Value',
-      value: '$24,580.00',
+      value: portfolioValue,
       change: '+12.5%',
       trend: 'up',
       icon: DollarSign,
     },
     {
       title: 'Active Strategies',
-      value: '8',
+      value: activeStrategiesCount,
       change: '+2 this week',
       trend: 'up',
       icon: Bot,
     },
     {
       title: 'Today\'s P&L',
-      value: '+$342.50',
+      value: todaysPnl,
       change: '+2.8%',
       trend: 'up',
       icon: TrendingUp,
     },
     {
       title: 'Win Rate',
-      value: '73.2%',
+      value: winRate,
       change: '+1.2%',
       trend: 'up',
       icon: Activity,
