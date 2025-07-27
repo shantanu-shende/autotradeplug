@@ -14,6 +14,207 @@ export type Database = {
   }
   public: {
     Tables: {
+      demo_accounts: {
+        Row: {
+          account_name: string
+          balance: number
+          created_at: string
+          hash_id: string
+          id: string
+          initial_balance: number
+          status: Database["public"]["Enums"]["account_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_name: string
+          balance?: number
+          created_at?: string
+          hash_id: string
+          id?: string
+          initial_balance?: number
+          status?: Database["public"]["Enums"]["account_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_name?: string
+          balance?: number
+          created_at?: string
+          hash_id?: string
+          id?: string
+          initial_balance?: number
+          status?: Database["public"]["Enums"]["account_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deployed_strategies: {
+        Row: {
+          demo_account_id: string
+          deployed_at: string
+          id: string
+          is_active: boolean
+          strategy_id: string
+        }
+        Insert: {
+          demo_account_id: string
+          deployed_at?: string
+          id?: string
+          is_active?: boolean
+          strategy_id: string
+        }
+        Update: {
+          demo_account_id?: string
+          deployed_at?: string
+          id?: string
+          is_active?: boolean
+          strategy_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployed_strategies_demo_account_id_fkey"
+            columns: ["demo_account_id"]
+            isOneToOne: false
+            referencedRelation: "demo_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deployed_strategies_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      market_data: {
+        Row: {
+          data_source: string | null
+          id: string
+          price: number
+          symbol: string
+          timestamp: string
+          volume: number | null
+        }
+        Insert: {
+          data_source?: string | null
+          id?: string
+          price: number
+          symbol: string
+          timestamp?: string
+          volume?: number | null
+        }
+        Update: {
+          data_source?: string | null
+          id?: string
+          price?: number
+          symbol?: string
+          timestamp?: string
+          volume?: number | null
+        }
+        Relationships: []
+      }
+      strategies: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_predefined: boolean
+          name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_predefined?: boolean
+          name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_predefined?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          created_at: string
+          demo_account_id: string
+          entry_price: number | null
+          entry_time: string | null
+          exit_price: number | null
+          exit_time: string | null
+          id: string
+          pnl: number | null
+          quantity: number
+          signal_data: Json | null
+          status: Database["public"]["Enums"]["trade_status"]
+          strategy_id: string
+          symbol: string
+          trade_type: Database["public"]["Enums"]["trade_type"]
+        }
+        Insert: {
+          created_at?: string
+          demo_account_id: string
+          entry_price?: number | null
+          entry_time?: string | null
+          exit_price?: number | null
+          exit_time?: string | null
+          id?: string
+          pnl?: number | null
+          quantity: number
+          signal_data?: Json | null
+          status?: Database["public"]["Enums"]["trade_status"]
+          strategy_id: string
+          symbol: string
+          trade_type: Database["public"]["Enums"]["trade_type"]
+        }
+        Update: {
+          created_at?: string
+          demo_account_id?: string
+          entry_price?: number | null
+          entry_time?: string | null
+          exit_price?: number | null
+          exit_time?: string | null
+          id?: string
+          pnl?: number | null
+          quantity?: number
+          signal_data?: Json | null
+          status?: Database["public"]["Enums"]["trade_status"]
+          strategy_id?: string
+          symbol?: string
+          trade_type?: Database["public"]["Enums"]["trade_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_demo_account_id_fkey"
+            columns: ["demo_account_id"]
+            isOneToOne: false
+            referencedRelation: "demo_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trades_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string | null
@@ -46,10 +247,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_hash_id: {
+        Args: { first_name: string }
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      account_status: "active" | "inactive" | "dumped"
+      trade_status: "pending" | "executed" | "cancelled"
+      trade_type: "buy" | "sell"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -176,6 +382,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      account_status: ["active", "inactive", "dumped"],
+      trade_status: ["pending", "executed", "cancelled"],
+      trade_type: ["buy", "sell"],
+    },
   },
 } as const

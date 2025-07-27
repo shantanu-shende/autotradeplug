@@ -2,6 +2,7 @@ import { useState } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import DashboardHome from '@/components/dashboard/DashboardHome';
 import BrokerConnection from '@/components/dashboard/BrokerConnection';
+import { DemoAccountsManager } from '@/components/demo/DemoAccountsManager';
 
 const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -11,7 +12,7 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
       case 'dashboard':
         return <DashboardHome />;
       case 'strategies':
-        return <BrokerConnection />;
+        return <DemoAccountsManager />;
       case 'backtest':
         return (
           <div className="text-center py-12">
