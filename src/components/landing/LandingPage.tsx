@@ -1,7 +1,7 @@
 import Navbar from '@/components/layout/Navbar';
 import HeroSection from '@/components/sections/HeroSection';
 import FeaturesSection from '@/components/sections/FeaturesSection';
-import DashboardPreview from '@/components/sections/DashboardPreview';
+import Footer from '@/components/layout/Footer';
 
 interface LandingPageProps {
   onAuthClick: () => void;
@@ -13,9 +13,9 @@ const LandingPage = ({ onAuthClick }: LandingPageProps) => {
       <Navbar onAuthClick={onAuthClick} />
       <main>
         <HeroSection onAuthClick={onAuthClick} />
-        <FeaturesSection />
-        <DashboardPreview />
+        <FeaturesSection onAuthClick={onAuthClick} />
       </main>
+      <Footer />
     </div>
   );
 };

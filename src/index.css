@@ -181,6 +181,26 @@
   .slide-up {
     animation: slide-up 0.6s ease-out forwards;
   }
+  
+  /* Underline Animation */
+  .story-link {
+    @apply relative inline-block;
+  }
+  
+  .story-link::after {
+    content: '';
+    @apply absolute w-full scale-x-0 h-0.5 bottom-0 left-0 bg-primary 
+           origin-bottom-right transition-transform duration-300;
+  }
+  
+  .story-link:hover::after {
+    @apply scale-x-100 origin-bottom-left;
+  }
+  
+  /* Hover Scale Animation */
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
 }
 
 @layer utilities {

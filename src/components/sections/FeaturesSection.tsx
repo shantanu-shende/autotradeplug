@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { 
   Zap, 
   Shield, 
@@ -16,7 +17,11 @@ import {
   Rocket
 } from 'lucide-react';
 
-const FeaturesSection = () => {
+interface FeaturesSectionProps {
+  onAuthClick?: () => void;
+}
+
+const FeaturesSection = ({ onAuthClick }: FeaturesSectionProps = {}) => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -172,14 +177,15 @@ const FeaturesSection = () => {
             <p className="text-muted-foreground mb-6">
               Join over 10,000 traders who have automated their success with AutoTradePlug
             </p>
-            <motion.button
-              className="glow-button"
+            <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring' as const, stiffness: 400, damping: 17 }}
             >
-              Start Free Trial
-            </motion.button>
+              <Button className="glow-button" onClick={onAuthClick}>
+                Start Free Trial
+              </Button>
+            </motion.div>
           </div>
         </motion.div>
       </div>
