@@ -34,11 +34,16 @@ export const CreateDemoAccountModal = ({ open, onOpenChange, onAccountCreated }:
     setIsLoading(true);
 
     try {
-      const response = await fetch('/functions/v1/demo-accounts', {
+      const { data: session } = await (await import('@/integrations/supabase/client')).supabase.auth.getSession();
+      if (!session.session) {
+        throw new Error('You must be logged in to create a demo account');
+      }
+
+      const response = await fetch('https://ogihrnxtsafuegosuujm.supabase.co/functions/v1/demo-accounts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await import('@/integrations/supabase/client')).supabase.auth.getSession().then(({ data }) => data.session?.access_token)}`,
+          'Authorization': `Bearer ${session.session.access_token}`,
         },
         body: JSON.stringify({
           account_name: accountName.trim(),

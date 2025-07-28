@@ -12,14 +12,14 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
       case 'dashboard':
         return <DashboardHome />;
       case 'strategies':
-        return <DemoAccountsManager />;
-      case 'backtest':
         return (
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gradient mb-4">Backtest Engine</h2>
+            <h2 className="text-2xl font-bold text-gradient mb-4">Strategy Management</h2>
             <p className="text-muted-foreground">Coming soon...</p>
           </div>
         );
+      case 'backtest':
+        return <DemoAccountsManager />;
       case 'marketplace':
         return (
           <div className="text-center py-12">
