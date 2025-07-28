@@ -34,27 +34,21 @@ export const CreateDemoAccountModal = ({ open, onOpenChange, onAccountCreated }:
     setIsLoading(true);
 
     try {
-      const { data: session } = await (await import('@/integrations/supabase/client')).supabase.auth.getSession();
-      if (!session.session) {
-        throw new Error('You must be logged in to create a demo account');
-      }
-
-      const response = await fetch('https://ogihrnxtsafuegosuujm.supabase.co/functions/v1/demo-accounts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.session.access_token}`,
-        },
-        body: JSON.stringify({
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('demo-accounts', {
+        body: {
           account_name: accountName.trim(),
           initial_balance: balance[0],
-        }),
+        },
       });
 
-      const data = await response.json();
+      if (error) {
+        throw new Error(error.message || 'Failed to create demo account');
+      }
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create demo account');
+      if (!data?.account) {
+        throw new Error('Failed to create demo account');
       }
 
       toast({
