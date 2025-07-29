@@ -241,6 +241,29 @@
   }
 }
 
+/* Card flip animation utilities */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.transform-rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Strategy card animations */
+.strategy-card {
+  transition: var(--transition-smooth);
+}
+
+.strategy-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-elegant);
+}
+
 @layer base {
   * {
     @apply border-border;
