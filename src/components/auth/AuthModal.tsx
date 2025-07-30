@@ -1,6 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { AuthForm } from './AuthForm';
+import EnhancedAuthForm from './EnhancedAuthForm';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -15,7 +15,7 @@ const AuthModal = ({ isOpen, onClose, onAuthSuccess }: AuthModalProps) => {
         <DialogHeader>
           <DialogTitle className="sr-only">Authentication</DialogTitle>
         </DialogHeader>
-        <AuthForm onSuccess={onAuthSuccess} onClose={onClose} />
+        <EnhancedAuthForm onSuccess={onAuthSuccess} onClose={onClose} />
       </DialogContent>
     </Dialog>
   );
