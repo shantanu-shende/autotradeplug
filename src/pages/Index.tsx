@@ -59,6 +59,11 @@ const Index = () => {
     setAuthFlow('auth');
   };
 
+  const handleBackToAuth = () => {
+    setAuthFlow('auth');
+    setShowAuthModal(true);
+  };
+
   const handlePhoneVerified = (phone: string) => {
     setPhoneNumber(phone);
     setAuthFlow('pin-setup');
@@ -91,7 +96,7 @@ const Index = () => {
         return (
           <PhoneVerification
             onVerificationComplete={handlePhoneVerified}
-            onBack={() => setAuthFlow('auth')}
+            onBack={handleBackToAuth}
           />
         );
       }
@@ -130,7 +135,7 @@ const Index = () => {
               setPhoneNumber(phone);
               setAuthFlow('pin-setup');
             }}
-            onBack={() => setAuthFlow('pin-verify')}
+            onBack={handleBackToAuth}
           />
         );
       }

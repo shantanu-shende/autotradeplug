@@ -4,6 +4,8 @@ import DashboardHome from '@/components/dashboard/DashboardHome';
 import BrokerConnection from '@/components/dashboard/BrokerConnection';
 import { DemoAccountsManager } from '@/components/demo/DemoAccountsManager';
 import { StrategyMarketplace } from '@/components/strategy/StrategyMarketplace';
+import BrokerDashboard from './BrokerDashboard';
+import StrategyManager from '@/components/strategy/StrategyManager';
 
 const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -13,16 +15,13 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
       case 'dashboard':
         return <DashboardHome />;
       case 'strategies':
+        return <StrategyManager />;
+      case 'marketplace':
         return <StrategyMarketplace />;
       case 'backtest':
         return <DemoAccountsManager />;
-      case 'marketplace':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gradient mb-4">Strategy Marketplace</h2>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
-        );
+      case 'brokers':
+        return <BrokerDashboard />;
       case 'settings':
         return (
           <div className="text-center py-12">

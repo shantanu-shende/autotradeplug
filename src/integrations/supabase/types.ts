@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      brokers: {
+        Row: {
+          broker_name: string
+          broker_user_id: string | null
+          connected_at: string | null
+          created_at: string
+          id: string
+          last_sync: string | null
+          metadata: Json | null
+          refresh_token: string | null
+          status: string
+          token: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          broker_name: string
+          broker_user_id?: string | null
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          refresh_token?: string | null
+          status?: string
+          token?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          broker_name?: string
+          broker_user_id?: string | null
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          refresh_token?: string | null
+          status?: string
+          token?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       demo_accounts: {
         Row: {
           account_name: string
@@ -215,6 +260,163 @@ export type Database = {
         }
         Relationships: []
       }
+      strategy_orders: {
+        Row: {
+          broker_order_id: string | null
+          created_at: string
+          executed_at: string | null
+          executed_price: number | null
+          fees: number | null
+          id: string
+          metadata: Json | null
+          order_time: string
+          order_type: string
+          pnl: number | null
+          price: number | null
+          quantity: number
+          status: string
+          strategy_run_id: string
+          symbol: string
+        }
+        Insert: {
+          broker_order_id?: string | null
+          created_at?: string
+          executed_at?: string | null
+          executed_price?: number | null
+          fees?: number | null
+          id?: string
+          metadata?: Json | null
+          order_time?: string
+          order_type: string
+          pnl?: number | null
+          price?: number | null
+          quantity: number
+          status?: string
+          strategy_run_id: string
+          symbol: string
+        }
+        Update: {
+          broker_order_id?: string | null
+          created_at?: string
+          executed_at?: string | null
+          executed_price?: number | null
+          fees?: number | null
+          id?: string
+          metadata?: Json | null
+          order_time?: string
+          order_type?: string
+          pnl?: number | null
+          price?: number | null
+          quantity?: number
+          status?: string
+          strategy_run_id?: string
+          symbol?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_orders_strategy_run_id_fkey"
+            columns: ["strategy_run_id"]
+            isOneToOne: false
+            referencedRelation: "strategy_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      strategy_runs: {
+        Row: {
+          broker_id: string
+          config: Json | null
+          created_at: string
+          id: string
+          run_type: string
+          started_at: string
+          status: string
+          stopped_at: string | null
+          strategy_id: string
+          success_rate: number | null
+          total_pnl: number | null
+          total_trades: number | null
+        }
+        Insert: {
+          broker_id: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          run_type?: string
+          started_at?: string
+          status?: string
+          stopped_at?: string | null
+          strategy_id: string
+          success_rate?: number | null
+          total_pnl?: number | null
+          total_trades?: number | null
+        }
+        Update: {
+          broker_id?: string
+          config?: Json | null
+          created_at?: string
+          id?: string
+          run_type?: string
+          started_at?: string
+          status?: string
+          stopped_at?: string | null
+          strategy_id?: string
+          success_rate?: number | null
+          total_pnl?: number | null
+          total_trades?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strategy_runs_broker_id_fkey"
+            columns: ["broker_id"]
+            isOneToOne: false
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strategy_runs_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "user_strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trade_logs: {
+        Row: {
+          id: string
+          log_level: string
+          message: string
+          metadata: Json | null
+          strategy_run_id: string
+          timestamp: string
+        }
+        Insert: {
+          id?: string
+          log_level?: string
+          message: string
+          metadata?: Json | null
+          strategy_run_id: string
+          timestamp?: string
+        }
+        Update: {
+          id?: string
+          log_level?: string
+          message?: string
+          metadata?: Json | null
+          strategy_run_id?: string
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_logs_strategy_run_id_fkey"
+            columns: ["strategy_run_id"]
+            isOneToOne: false
+            referencedRelation: "strategy_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trades: {
         Row: {
           created_at: string
@@ -280,6 +482,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_strategies: {
+        Row: {
+          config: Json
+          created_at: string
+          description: string | null
+          id: string
+          risk_level: string
+          status: string
+          strategy_name: string
+          strategy_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          risk_level?: string
+          status?: string
+          strategy_name: string
+          strategy_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          risk_level?: string
+          status?: string
+          strategy_name?: string
+          strategy_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       users: {
         Row: {

@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   LogOut,
-  Shield
+  Shield,
+  Wifi
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -24,6 +25,7 @@ interface DashboardLayoutProps {
 const sidebarItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'strategies', label: 'Strategies', icon: Bot },
+  { id: 'brokers', label: 'Brokers', icon: Wifi },
   { id: 'backtest', label: 'Backtest', icon: TrendingUp },
   { id: 'marketplace', label: 'Marketplace', icon: Shield },
   { id: 'settings', label: 'Settings', icon: Settings },
