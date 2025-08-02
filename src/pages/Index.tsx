@@ -59,9 +59,12 @@ const Index = () => {
     setAuthFlow('auth');
   };
 
-  const handleBackToAuth = () => {
+  const handleBackToAuth = async () => {
+    // Log out the user and return to landing page
+    await signOut();
+    setUserProfile(null);
     setAuthFlow('auth');
-    setShowAuthModal(true);
+    setShowAuthModal(false);
   };
 
   const handlePhoneVerified = (phone: string) => {
