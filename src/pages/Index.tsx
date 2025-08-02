@@ -90,8 +90,12 @@ const Index = () => {
     return <LoadingScreen message="Loading your account..." />;
   }
 
-  // User is authenticated
+  // User is authenticated - go directly to dashboard
   if (user && session) {
+    // TODO: UNCOMMENT BELOW TO RE-ENABLE PHONE VERIFICATION AND PIN SETUP
+    // Currently commented out for development - users go directly to dashboard
+    
+    /*
     // Check if user has completed onboarding
     if (!userProfile?.is_onboarded) {
       // New user - needs phone verification and PIN setup
@@ -159,8 +163,9 @@ const Index = () => {
         return <LoadingScreen message="Verifying your account..." />;
       }
     }
+    */
 
-    // User is fully authenticated and verified
+    // User is authenticated - go directly to dashboard (bypassing phone/PIN verification)
     return <Dashboard onLogout={handleLogout} />;
   }
 
