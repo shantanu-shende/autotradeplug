@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import BrokerCard from '@/components/broker/BrokerCard';
 import BrokerConnectionModal from '@/components/broker/BrokerConnectionModal';
+import BrokerSummaryStats from '@/components/broker/BrokerSummaryStats';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Wifi } from 'lucide-react';
 
@@ -220,31 +221,49 @@ const BrokerDashboard: React.FC = () => {
   };
 
   const connectedCount = brokers.filter(b => b.status === 'connected').length;
+  const totalBalance = brokers
+    .filter(b => b.status === 'connected')
+    .reduce((sum, b) => sum + (b.metadata?.balance || 0), 0);
+  const healthScore = Math.round((connectedCount / AVAILABLE_BROKERS.length) * 100);
+
+  const handleAddBroker = () => {
+    // Find first disconnected broker and open connection modal
+    const disconnectedBroker = AVAILABLE_BROKERS.find(ab => 
+      !brokers.some(b => b.broker_name === ab.id && b.status === 'connected')
+    );
+    if (disconnectedBroker) {
+      handleConnect(disconnectedBroker);
+    }
+  };
 
   return (
     <div className="space-y-6">
+      {/* Broker Summary Stats - Moved from Dashboard */}
+      <BrokerSummaryStats
+        connectedCount={connectedCount}
+        totalBrokers={AVAILABLE_BROKERS.length}
+        totalBalance={totalBalance}
+        healthScore={healthScore}
+        onAddBroker={handleAddBroker}
+      />
+
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gradient">Broker Connections</h2>
+          <h2 className="text-2xl font-bold text-gradient">All Brokers</h2>
           <p className="text-muted-foreground">
-            Connect your trading accounts to start automated trading
+            Manage your trading account connections
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <div className="text-sm text-muted-foreground">
-            {connectedCount} of {AVAILABLE_BROKERS.length} connected
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => handleRefresh()}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh All
-          </Button>
-        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => handleRefresh()}
+          disabled={refreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh All
+        </Button>
       </div>
 
       {loading ? (

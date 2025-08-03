@@ -93,6 +93,45 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
             </div>
           </div>
 
+          {/* Market Overview - Moved from dashboard center */}
+          <div className="p-4 border-b">
+            <h4 className="text-sm font-medium mb-3">Market Overview</h4>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <div className="text-muted-foreground">NIFTY 50</div>
+                  <div className="flex items-center space-x-1">
+                    <span className="font-medium">19,674.25</span>
+                    <span className="text-success text-[10px]">+0.8%</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">SENSEX</div>
+                  <div className="flex items-center space-x-1">
+                    <span className="font-medium">66,795.14</span>
+                    <span className="text-success text-[10px]">+1.2%</span>
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <div className="text-muted-foreground">VIX</div>
+                  <div className="flex items-center space-x-1">
+                    <span className="font-medium">13.45</span>
+                    <span className="text-destructive text-[10px]">-2.1%</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">PCR</div>
+                  <div className="flex items-center space-x-1">
+                    <span className="font-medium">0.89</span>
+                    <span className="text-warning text-[10px]">-0.3%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-2">
             {sidebarItems.map((item) => {
@@ -143,7 +182,16 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
             <h1 className="text-2xl font-bold capitalize">{currentPage}</h1>
             
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="relative">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="relative"
+                onClick={() => {
+                  // This will be handled by parent component
+                  const event = new CustomEvent('openNotifications');
+                  window.dispatchEvent(event);
+                }}
+              >
                 <Bell className="w-5 h-5" />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full flex items-center justify-center">
                   <span className="text-xs text-white">3</span>

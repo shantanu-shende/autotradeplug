@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import StrategyOfTheDay from './StrategyOfTheDay';
 import { 
   Plus, 
   Play, 
@@ -21,7 +22,9 @@ import {
   TrendingUp,
   Activity,
   Clock,
-  Target
+  Target,
+  Filter,
+  SortAsc
 } from 'lucide-react';
 
 interface UserStrategy {
@@ -239,11 +242,29 @@ const StrategyManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Strategy of the Day - Moved from Dashboard */}
+      <StrategyOfTheDay />
+
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gradient">Strategy Manager</h2>
+          <h2 className="text-2xl font-bold text-gradient">My Strategies</h2>
           <p className="text-muted-foreground">Create, manage and deploy your trading strategies</p>
         </div>
+        
+        <div className="flex items-center space-x-3">
+          <Button variant="outline" size="sm">
+            <Filter className="h-4 w-4 mr-2" />
+            Filter
+          </Button>
+          <Button variant="outline" size="sm">
+            <SortAsc className="h-4 w-4 mr-2" />
+            Sort
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div></div>
         
         <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
           <DialogTrigger asChild>

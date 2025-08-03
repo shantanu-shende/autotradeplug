@@ -98,14 +98,6 @@ const DashboardHome = () => {
         })}
       </div>
 
-      {/* Market Overview */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <MarketOverviewCard />
-      </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Strategies */}
@@ -204,23 +196,6 @@ const DashboardHome = () => {
         </motion.div>
       </div>
 
-      {/* Suggested Strategy */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-      >
-        <SuggestedStrategyCard />
-      </motion.div>
-
-      {/* Broker Connection Dashboard */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0 }}
-      >
-        <BrokerConnectionDashboard />
-      </motion.div>
     </div>
   );
 };
