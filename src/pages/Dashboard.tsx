@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import DashboardHome from '@/components/dashboard/DashboardHome';
+import Market from '@/pages/Market';
 import BrokerConnection from '@/components/dashboard/BrokerConnection';
 import { DemoAccountsManager } from '@/components/demo/DemoAccountsManager';
 import { StrategyMarketplace } from '@/components/strategy/StrategyMarketplace';
 import BrokerDashboard from './BrokerDashboard';
 import StrategyManager from '@/components/strategy/StrategyManager';
+import BacktestCards from '@/components/backtest/BacktestCards';
 import NotificationOverlay from '@/components/notifications/NotificationOverlay';
 
 const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
@@ -82,12 +84,14 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
     switch (currentPage) {
       case 'dashboard':
         return <DashboardHome />;
+      case 'market':
+        return <Market />;
       case 'strategies':
         return <StrategyManager />;
       case 'marketplace':
         return <StrategyMarketplace />;
       case 'backtest':
-        return <DemoAccountsManager />;
+        return <BacktestCards />;
       case 'brokers':
         return <BrokerDashboard />;
       case 'settings':

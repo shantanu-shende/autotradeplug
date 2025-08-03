@@ -24,6 +24,7 @@ interface DashboardLayoutProps {
 
 const sidebarItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'market', label: 'Market', icon: TrendingUp },
   { id: 'strategies', label: 'Strategies', icon: Bot },
   { id: 'brokers', label: 'Brokers', icon: Wifi },
   { id: 'backtest', label: 'Backtest', icon: TrendingUp },
