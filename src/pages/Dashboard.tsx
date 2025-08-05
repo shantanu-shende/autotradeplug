@@ -4,7 +4,7 @@ import DashboardHome from '@/components/dashboard/DashboardHome';
 import Market from '@/pages/Market';
 import BrokerConnection from '@/components/dashboard/BrokerConnection';
 import { DemoAccountsManager } from '@/components/demo/DemoAccountsManager';
-import { StrategyMarketplace } from '@/components/strategy/StrategyMarketplace';
+import Marketplace from './Marketplace';
 import BrokerDashboard from './BrokerDashboard';
 import StrategyManager from '@/components/strategy/StrategyManager';
 import BacktestCards from '@/components/backtest/BacktestCards';
@@ -88,8 +88,8 @@ const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
         return <Market />;
       case 'strategies':
         return <StrategyManager />;
-      case 'marketplace':
-        return <StrategyMarketplace />;
+        case 'marketplace':
+          return <Marketplace />;
       case 'backtest':
         return <BacktestCards />;
       case 'brokers':
