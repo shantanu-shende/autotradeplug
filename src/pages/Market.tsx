@@ -23,6 +23,8 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 import { useCountUp } from '@/hooks/useCountUp';
+import MarketChart from '@/components/market/MarketChart';
+import AssetControls from '@/components/market/AssetControls';
 
 interface IndexData {
   symbol: string;
@@ -70,6 +72,11 @@ const Market = () => {
   const [selectedSymbol, setSelectedSymbol] = useState('NIFTY');
   const [selectedExpiry, setSelectedExpiry] = useState('2024-01-25');
   const [refreshing, setRefreshing] = useState(false);
+  // Chart controls (non-breaking additions)
+  const [tvSymbol, setTvSymbol] = useState<string>('NSE:NIFTY');
+  const [interval, setInterval] = useState<'1'|'5'|'60'|'D'|'W'|'M'>('D');
+  const [rsi, setRsi] = useState<boolean>(true);
+  const [ema, setEma] = useState<boolean>(false);
   const controls = useAnimation();
 
   // Mock data
@@ -142,15 +149,15 @@ const Market = () => {
 
   // Auto refresh every 10 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
+    const refreshId = window.setInterval(() => {
       setRefreshing(true);
-      setTimeout(() => setRefreshing(false), 500);
+      window.setTimeout(() => setRefreshing(false), 500);
       controls.start({
         scale: [1, 1.02, 1],
         transition: { duration: 0.3 }
       });
     }, 10000);
-    return () => clearInterval(interval);
+    return () => window.clearInterval(refreshId);
   }, [controls]);
 
   const getChangeColor = (change: number) => change >= 0 ? 'text-success' : 'text-destructive';
@@ -244,6 +251,28 @@ const Market = () => {
           </Card>
         </motion.div>
       </div>
+
+      {/* Centered TradingView Chart */}
+      <Card className="glass-panel">
+        <CardHeader className="space-y-2">
+          <CardTitle>Market Chart</CardTitle>
+          <AssetControls
+            symbol={tvSymbol}
+            onSymbolChange={setTvSymbol}
+            interval={interval}
+            onIntervalChange={setInterval}
+            rsi={rsi}
+            onRsiChange={setRsi}
+            ema={ema}
+            onEmaChange={setEma}
+          />
+        </CardHeader>
+        <CardContent>
+          <div className="relative">
+            <MarketChart symbol={tvSymbol} interval={interval} />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Gainers / Losers */}
