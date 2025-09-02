@@ -554,9 +554,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_request_otp: {
+        Args: { phone: string }
+        Returns: boolean
+      }
       generate_hash_id: {
         Args: { first_name: string }
         Returns: string
+      }
+      hash_otp_code: {
+        Args: { otp_code: string }
+        Returns: string
+      }
+      verify_otp_code: {
+        Args: { hashed_otp: string; plain_otp: string }
+        Returns: boolean
+      }
+      verify_otp_secure: {
+        Args: { otp: string; phone: string }
+        Returns: {
+          phone_verified: string
+          success: boolean
+        }[]
       }
     }
     Enums: {

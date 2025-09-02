@@ -56,16 +56,32 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
+      // Hash the OTP before storing
+      const { data: hashedOtp, error: hashError } = await supabase
+        .rpc('hash_otp_code', { otp_code: otpCode });
+
+      if (hashError) {
+        throw new Error("Failed to generate secure OTP");
+      }
+
       const { error } = await supabase
         .from('otp_verifications')
         .insert({
           phone_number: phoneNumber.replace(/\D/g, ''),
-          otp_code: otpCode,
+          otp_code: hashedOtp,
           expires_at: expiresAt.toISOString()
         });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('can_request_otp') || error.message.includes('rate limit')) {
+          throw new Error("Too many OTP requests. Please wait 15 minutes before trying again.");
+        }
+        throw error;
+      }
 
+      // Store the plain OTP temporarily for verification (in production, this would be sent via SMS)
+      sessionStorage.setItem('temp_otp', otpCode);
+      
       toast({
         title: "OTP Sent",
         description: `Verification code sent to ${phoneNumber}`,
@@ -97,19 +113,17 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({
 
     setLoading(true);
     try {
+      // Use the secure verification function
       const { data, error } = await supabase
-        .from('otp_verifications')
-        .select('*')
-        .eq('phone_number', phoneNumber.replace(/\D/g, ''))
-        .eq('otp_code', otp)
-        .eq('is_verified', false)
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .rpc('verify_otp_secure', {
+          phone: phoneNumber.replace(/\D/g, ''),
+          otp: otp
+        });
 
       if (error) throw error;
 
-      if (!data || data.length === 0) {
+      // Check if verification was successful
+      if (!data || data.length === 0 || !data[0].success) {
         toast({
           title: "Invalid OTP",
           description: "The code is incorrect or has expired",
@@ -118,11 +132,8 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({
         return;
       }
 
-      // Mark OTP as verified
-      await supabase
-        .from('otp_verifications')
-        .update({ is_verified: true })
-        .eq('id', data[0].id);
+      // Clear the temporary OTP from session storage
+      sessionStorage.removeItem('temp_otp');
 
       toast({
         title: "Phone Verified",
