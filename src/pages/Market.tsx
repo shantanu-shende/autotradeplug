@@ -25,6 +25,8 @@ import {
 import { useCountUp } from '@/hooks/useCountUp';
 import MarketChart from '@/components/market/MarketChart';
 import AssetControls from '@/components/market/AssetControls';
+import LiveOptionChain from '@/components/market/LiveOptionChain';
+import { useMarketMetrics } from '@/hooks/useDhanMarketData';
 
 interface IndexData {
   symbol: string;
@@ -79,6 +81,10 @@ const Market = () => {
   const [ema, setEma] = useState<boolean>(false);
   const controls = useAnimation();
 
+  // Live market data
+  const { metrics: niftyMetrics, isLoading: niftyLoading } = useMarketMetrics('NIFTY');
+  const { metrics: bankNiftyMetrics, isLoading: bankNiftyLoading } = useMarketMetrics('BANKNIFTY');
+
   // Mock data
   const indices: IndexData[] = [
     { symbol: 'NIFTY 50', ltp: 19674.25, change: 157.80, changePercent: 0.81, volume: '2.5Cr' },
@@ -86,9 +92,13 @@ const Market = () => {
     { symbol: 'MIDCAP', ltp: 32845.60, change: -89.40, changePercent: -0.27, volume: '98L' },
   ];
 
+  // Use live metrics when available, fallback to mock data
   const marketMetrics = {
     vix: { value: 13.45, change: -0.28 },
-    pcr: { value: 0.89, change: -0.03 }
+    pcr: { 
+      value: niftyMetrics?.pcr || 0.89, 
+      change: -0.03 
+    }
   };
 
   const gainers: StockData[] = [
@@ -357,71 +367,9 @@ const Market = () => {
           </Card>
         </div>
 
-        {/* Option Chain Analytics */}
+        {/* Live Option Chain */}
         <div>
-          <Card className="glass-panel">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <Target className="w-5 h-5 text-primary" />
-                  <span>NIFTY Options</span>
-                </CardTitle>
-                <Button variant="ghost" size="sm">
-                  <Expand className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground">Max Pain</div>
-                  <div className="text-lg font-bold text-primary">19650</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-sm text-muted-foreground">Call OI</div>
-                  <div className="text-lg font-bold">12.45%</div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { strike: 19600, callOI: 60, putOI: 40 },
-                  { strike: 19650, callOI: 80, putOI: 65 },
-                  { strike: 19700, callOI: 45, putOI: 85 }
-                ].map((option, i) => (
-                  <motion.div
-                    key={option.strike}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="flex items-center justify-between p-2 rounded hover:bg-muted/20"
-                  >
-                    <span className="text-sm font-medium">{option.strike}</span>
-                    <div className="flex space-x-2">
-                      <div className="w-8 h-2 bg-success/30 rounded">
-                        <motion.div 
-                          className="h-full bg-success rounded"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${option.callOI}%` }}
-                          transition={{ delay: i * 0.1 + 0.3, duration: 0.5 }}
-                        />
-                      </div>
-                      <div className="w-8 h-2 bg-destructive/30 rounded">
-                        <motion.div 
-                          className="h-full bg-destructive rounded"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${option.putOI}%` }}
-                          transition={{ delay: i * 0.1 + 0.3, duration: 0.5 }}
-                        />
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-              <Button size="sm" className="w-full hover:glow-primary">
-                Deploy Strategy
-              </Button>
-            </CardContent>
-          </Card>
+          <LiveOptionChain instrument="NIFTY" maxItems={5} />
         </div>
       </div>
 
