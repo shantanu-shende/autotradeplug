@@ -14,13 +14,194 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      brokers: {
+        Row: {
+          broker_name: string
+          connected_at: string | null
+          created_at: string
+          id: string
+          last_sync: string | null
+          metadata: Json | null
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          broker_name: string
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          broker_name?: string
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          status?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      deployed_strategies: {
+        Row: {
+          config: Json | null
+          demo_account_id: string | null
+          deployed_at: string
+          id: string
+          status: string | null
+          strategy_id: string | null
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          demo_account_id?: string | null
+          deployed_at?: string
+          id?: string
+          status?: string | null
+          strategy_id?: string | null
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          demo_account_id?: string | null
+          deployed_at?: string
+          id?: string
+          status?: string | null
+          strategy_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployed_strategies_strategy_id_fkey"
+            columns: ["strategy_id"]
+            isOneToOne: false
+            referencedRelation: "user_strategies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      otp_verifications: {
+        Row: {
+          attempts: number | null
+          created_at: string
+          expires_at: string
+          id: string
+          is_verified: boolean | null
+          otp_code: string
+          phone_number: string
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code: string
+          phone_number: string
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_verified?: boolean | null
+          otp_code?: string
+          phone_number?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          is_onboarded: boolean | null
+          phone_number: string
+          pin_hash: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_onboarded?: boolean | null
+          phone_number: string
+          pin_hash?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          is_onboarded?: boolean | null
+          phone_number?: string
+          pin_hash?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_strategies: {
+        Row: {
+          config: Json | null
+          created_at: string
+          description: string | null
+          id: string
+          risk_level: string | null
+          status: string | null
+          strategy_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          risk_level?: string | null
+          status?: string | null
+          strategy_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          risk_level?: string | null
+          status?: string | null
+          strategy_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_request_otp: { Args: { phone: string }; Returns: boolean }
+      hash_otp_code: { Args: { otp_code: string }; Returns: string }
+      verify_otp_code: {
+        Args: { hashed_otp: string; plain_otp: string }
+        Returns: boolean
+      }
+      verify_otp_secure: {
+        Args: { otp: string; phone: string }
+        Returns: {
+          phone_verified: string
+          success: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
