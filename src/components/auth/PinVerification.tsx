@@ -54,11 +54,11 @@ const PinVerification: React.FC<PinVerificationProps> = ({
       }
 
       // Get user profile with PIN hash
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await (supabase
         .from('profiles')
         .select('pin_hash')
-        .eq('user_id', user.id)
-        .single();
+        .eq('id', user.id)
+        .single() as any);
 
       if (error) throw error;
 

@@ -1,48 +1,25 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { motion, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   TrendingUp, 
   TrendingDown, 
   Activity, 
-  Target, 
   AlertTriangle,
-  RefreshCw,
-  BarChart3,
   PieChart,
   ExternalLink,
   Expand,
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react';
-import { useCountUp } from '@/hooks/useCountUp';
 import MarketChart from '@/components/market/MarketChart';
 import AssetControls from '@/components/market/AssetControls';
-import LiveOptionChain from '@/components/market/LiveOptionChain';
-import { useMarketMetrics } from '@/hooks/useDhanMarketData';
-
-interface IndexData {
-  symbol: string;
-  ltp: number;
-  change: number;
-  changePercent: number;
-  volume: string;
-}
-
-interface StockData {
-  symbol: string;
-  ltp: number;
-  change: number;
-  changePercent: number;
-  volume: string;
-}
+import LiveOptionChainSimulated from '@/components/market/LiveOptionChainSimulated';
+import { useRealtimeMarketData } from '@/hooks/useRealtimeMarketData';
 
 interface SectorData {
   name: string;
@@ -50,74 +27,15 @@ interface SectorData {
   changePercent: number;
 }
 
-interface OptionData {
-  strike: number;
-  call_oi: number;
-  put_oi: number;
-  call_iv: number;
-  put_iv: number;
-  delta: number;
-  theta: number;
-}
-
-interface AlertData {
-  id: string;
-  type: 'iv_surge' | 'volume_spike' | 'price_alert';
-  symbol: string;
-  message: string;
-  timestamp: string;
-  impact: 'high' | 'medium' | 'low';
-}
-
 const Market = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedSymbol, setSelectedSymbol] = useState('NIFTY');
-  const [selectedExpiry, setSelectedExpiry] = useState('2024-01-25');
-  const [refreshing, setRefreshing] = useState(false);
-  // Chart controls (non-breaking additions)
+  // Chart controls
   const [tvSymbol, setTvSymbol] = useState<string>('NSE:NIFTY');
   const [interval, setInterval] = useState<'1'|'5'|'60'|'D'|'W'|'M'>('D');
   const [rsi, setRsi] = useState<boolean>(true);
   const [ema, setEma] = useState<boolean>(false);
-  const controls = useAnimation();
 
-  // Live market data
-  const { metrics: niftyMetrics, isLoading: niftyLoading } = useMarketMetrics('NIFTY');
-  const { metrics: bankNiftyMetrics, isLoading: bankNiftyLoading } = useMarketMetrics('BANKNIFTY');
-
-  // Mock data
-  const indices: IndexData[] = [
-    { symbol: 'NIFTY 50', ltp: 19674.25, change: 157.80, changePercent: 0.81, volume: '2.5Cr' },
-    { symbol: 'BANK NIFTY', ltp: 44512.30, change: 234.15, changePercent: 0.53, volume: '1.8Cr' },
-    { symbol: 'MIDCAP', ltp: 32845.60, change: -89.40, changePercent: -0.27, volume: '98L' },
-  ];
-
-  // Use live metrics when available, fallback to mock data
-  const marketMetrics = {
-    vix: { value: 13.45, change: -0.28 },
-    pcr: { 
-      value: niftyMetrics?.pcr || 0.89, 
-      change: -0.03 
-    }
-  };
-
-  const gainers: StockData[] = [
-    { symbol: 'ADANIPORTS', ltp: 785.50, change: 45.20, changePercent: 6.11, volume: '2.5Cr' },
-    { symbol: 'BAJFINANCE', ltp: 6834.75, change: 298.45, changePercent: 4.57, volume: '1.2Cr' },
-    { symbol: 'HDFCBANK', ltp: 1547.30, change: 67.85, changePercent: 4.58, volume: '3.1Cr' },
-  ];
-
-  const losers: StockData[] = [
-    { symbol: 'DRREDDY', ltp: 4234.20, change: -186.30, changePercent: -4.22, volume: '85L' },
-    { symbol: 'CIPLA', ltp: 1156.75, change: -48.25, changePercent: -4.00, volume: '67L' },
-    { symbol: 'SUNPHARMA', ltp: 1089.40, change: -42.60, changePercent: -3.76, volume: '92L' },
-  ];
-
-  const mostActive: StockData[] = [
-    { symbol: 'RELIANCE', ltp: 2485.50, change: 12.30, changePercent: 0.50, volume: '5.2Cr' },
-    { symbol: 'TCS', ltp: 3456.75, change: -23.45, changePercent: -0.67, volume: '4.8Cr' },
-    { symbol: 'INFY', ltp: 1567.80, change: 15.60, changePercent: 1.01, volume: '4.1Cr' },
-  ];
+  // Live market data from simulated realtime service
+  const { indices, gainers, losers, mostActive, metrics, isLive, lastUpdate } = useRealtimeMarketData(2000);
 
   const sectors: SectorData[] = [
     { name: 'Banking', change: 234.15, changePercent: 0.53 },
@@ -126,67 +44,9 @@ const Market = () => {
     { name: 'Auto', change: 89.25, changePercent: 1.24 },
   ];
 
-  const optionChain: OptionData[] = [
-    { strike: 19600, call_oi: 1250000, put_oi: 890000, call_iv: 15.4, put_iv: 16.2, delta: 0.75, theta: -8.5 },
-    { strike: 19650, call_oi: 1680000, put_oi: 1200000, call_iv: 14.8, put_iv: 15.9, delta: 0.68, theta: -9.2 },
-    { strike: 19700, call_oi: 2100000, put_oi: 1850000, call_iv: 14.2, put_iv: 15.1, delta: 0.52, theta: -10.8 },
-  ];
-
-  const alerts: AlertData[] = [
-    {
-      id: '1',
-      type: 'iv_surge',
-      symbol: 'NIFTY 19700 PE',
-      message: 'IV surge detected: 18.5% (+3.2%)',
-      timestamp: '2 mins ago',
-      impact: 'high'
-    },
-    {
-      id: '2',
-      type: 'volume_spike',
-      symbol: 'BANKNIFTY',
-      message: 'Volume spike: 250% above average',
-      timestamp: '5 mins ago',
-      impact: 'medium'
-    },
-  ];
-
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Auto refresh every 10 seconds
-  useEffect(() => {
-    const refreshId = window.setInterval(() => {
-      setRefreshing(true);
-      window.setTimeout(() => setRefreshing(false), 500);
-      controls.start({
-        scale: [1, 1.02, 1],
-        transition: { duration: 0.3 }
-      });
-    }, 10000);
-    return () => window.clearInterval(refreshId);
-  }, [controls]);
-
   const getChangeColor = (change: number) => change >= 0 ? 'text-success' : 'text-destructive';
-  const getChangeBadge = (change: number, changePercent: number) => (
-    <Badge variant={change >= 0 ? 'default' : 'destructive'} className="text-xs">
-      {change >= 0 ? <TrendingUp className="w-3 h-3 mr-1" /> : <TrendingDown className="w-3 h-3 mr-1" />}
-      {change >= 0 ? '+' : ''}{changePercent.toFixed(2)}%
-    </Badge>
-  );
 
-  const getImpactColor = (impact: string) => {
-    switch (impact) {
-      case 'high': return 'text-destructive';
-      case 'medium': return 'text-warning';
-      default: return 'text-muted-foreground';
-    }
-  };
-
-  if (isLoading) {
+  if (!indices || indices.length === 0) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-32 w-full" />
@@ -197,43 +57,69 @@ const Market = () => {
 
   return (
     <div className="space-y-6">
+      {/* Live Status Indicator */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className={`w-2 h-2 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`} />
+          <span>{isLive ? 'Live' : 'Delayed'}</span>
+          <span>• Last update: {lastUpdate.toLocaleTimeString()}</span>
+        </div>
+      </div>
+
       {/* Top Metrics Panel */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {indices.map((index, i) => (
-          <motion.div
-            key={index.symbol}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={controls}
-            whileHover={{ scale: 1.02 }}
-            className="relative"
-          >
-            <Card className="glass-panel hover:glow-primary transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-muted-foreground font-medium">{index.symbol}</span>
-                  {refreshing && <RefreshCw className="w-3 h-3 animate-spin text-primary" />}
-                </div>
-                <div className="text-xl font-bold mb-1">
-                  ₹{index.ltp.toLocaleString('en-IN')}
-                </div>
-                <div className={`flex items-center text-sm ${getChangeColor(index.change)}`}>
-                  {index.change >= 0 ? (
-                    <ArrowUpRight className="w-3 h-3 mr-1" />
-                  ) : (
-                    <ArrowDownRight className="w-3 h-3 mr-1" />
-                  )}
-                  {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent.toFixed(2)}%)
-                </div>
-                <div className="text-xs text-muted-foreground mt-1">Vol: {index.volume}</div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+        <AnimatePresence mode="popLayout">
+          {indices.map((index, i) => (
+            <motion.div
+              key={index.symbol}
+              layout
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.02 }}
+              className="relative"
+            >
+              <Card className="glass-panel hover:glow-primary transition-all duration-300">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-muted-foreground font-medium">{index.symbol}</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                  </div>
+                  <motion.div 
+                    key={index.ltp}
+                    initial={{ scale: 1.02, color: 'hsl(var(--primary))' }}
+                    animate={{ scale: 1, color: 'inherit' }}
+                    transition={{ duration: 0.3 }}
+                    className="text-xl font-bold mb-1"
+                  >
+                    ₹{index.ltp.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </motion.div>
+                  <div className={`flex items-center text-sm ${getChangeColor(index.change)}`}>
+                    {index.change >= 0 ? (
+                      <ArrowUpRight className="w-3 h-3 mr-1" />
+                    ) : (
+                      <ArrowDownRight className="w-3 h-3 mr-1" />
+                    )}
+                    <motion.span
+                      key={`${index.symbol}-change`}
+                      initial={{ backgroundColor: index.change >= 0 ? 'hsl(var(--success) / 0.3)' : 'hsl(var(--destructive) / 0.3)' }}
+                      animate={{ backgroundColor: 'transparent' }}
+                      transition={{ duration: 0.5 }}
+                      className="rounded px-1"
+                    >
+                      {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)} ({index.changePercent.toFixed(2)}%)
+                    </motion.span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">Vol: {index.volume}</div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
         
         {/* F&O Metrics */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
-          animate={controls}
+          animate={{ opacity: 1, scale: 1 }}
           whileHover={{ scale: 1.02 }}
           className="relative"
         >
@@ -241,19 +127,19 @@ const Market = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-muted-foreground font-medium">F&O</span>
-                {refreshing && <RefreshCw className="w-3 h-3 animate-spin text-primary" />}
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
               </div>
               <div className="space-y-2">
                 <div>
-                  <div className="text-sm font-medium">VIX: {marketMetrics.vix.value}</div>
-                  <div className={`text-xs ${getChangeColor(marketMetrics.vix.change)}`}>
-                    {marketMetrics.vix.change >= 0 ? '+' : ''}{marketMetrics.vix.change.toFixed(2)}
+                  <div className="text-sm font-medium">VIX: {metrics.vix.value}</div>
+                  <div className={`text-xs ${getChangeColor(metrics.vix.change)}`}>
+                    {metrics.vix.change >= 0 ? '+' : ''}{metrics.vix.change.toFixed(2)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium">PCR: {marketMetrics.pcr.value}</div>
-                  <div className={`text-xs ${getChangeColor(marketMetrics.pcr.change)}`}>
-                    {marketMetrics.pcr.change >= 0 ? '+' : ''}{marketMetrics.pcr.change.toFixed(2)}
+                  <div className="text-sm font-medium">PCR: {metrics.pcr.toFixed(2)}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Max Pain: {metrics.maxPain.toLocaleString('en-IN')}
                   </div>
                 </div>
               </div>
@@ -285,7 +171,7 @@ const Market = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Top Gainers / Losers */}
+        {/* Top Gainers */}
         <div>
           <Card className="glass-panel">
             <CardHeader>
@@ -301,26 +187,49 @@ const Market = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {gainers.slice(0, 3).map((stock, i) => (
-                  <motion.div
-                    key={stock.symbol}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/20 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{stock.symbol}</div>
-                      <div className="text-xs text-muted-foreground">₹{stock.ltp.toFixed(2)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-success font-medium">+{stock.changePercent.toFixed(2)}%</div>
-                      <div className="w-16 h-4 bg-success/20 rounded overflow-hidden">
-                        <div className="h-full bg-success rounded" style={{width: `${Math.min(stock.changePercent * 10, 100)}%`}}></div>
+                <AnimatePresence mode="popLayout">
+                  {gainers.slice(0, 3).map((stock, i) => (
+                    <motion.div
+                      key={stock.symbol}
+                      layout
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/20 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{stock.symbol}</div>
+                        <motion.div 
+                          key={stock.ltp}
+                          initial={{ scale: 1.05 }}
+                          animate={{ scale: 1 }}
+                          className="text-xs text-muted-foreground"
+                        >
+                          ₹{stock.ltp.toFixed(2)}
+                        </motion.div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div className="text-right">
+                        <motion.div 
+                          key={`${stock.symbol}-pct`}
+                          initial={{ backgroundColor: 'hsl(var(--success) / 0.3)' }}
+                          animate={{ backgroundColor: 'transparent' }}
+                          transition={{ duration: 0.5 }}
+                          className="text-xs text-success font-medium rounded px-1"
+                        >
+                          +{stock.changePercent.toFixed(2)}%
+                        </motion.div>
+                        <div className="w-16 h-4 bg-success/20 rounded overflow-hidden mt-1">
+                          <motion.div 
+                            className="h-full bg-success rounded"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(stock.changePercent * 10, 100)}%` }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             </CardContent>
           </Card>
@@ -342,26 +251,49 @@ const Market = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {losers.slice(0, 3).map((stock, i) => (
-                  <motion.div
-                    key={stock.symbol}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/20 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{stock.symbol}</div>
-                      <div className="text-xs text-muted-foreground">₹{stock.ltp.toFixed(2)}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-destructive font-medium">{stock.changePercent.toFixed(2)}%</div>
-                      <div className="w-16 h-4 bg-destructive/20 rounded overflow-hidden">
-                        <div className="h-full bg-destructive rounded" style={{width: `${Math.min(Math.abs(stock.changePercent) * 10, 100)}%`}}></div>
+                <AnimatePresence mode="popLayout">
+                  {losers.slice(0, 3).map((stock, i) => (
+                    <motion.div
+                      key={stock.symbol}
+                      layout
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/20 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{stock.symbol}</div>
+                        <motion.div 
+                          key={stock.ltp}
+                          initial={{ scale: 1.05 }}
+                          animate={{ scale: 1 }}
+                          className="text-xs text-muted-foreground"
+                        >
+                          ₹{stock.ltp.toFixed(2)}
+                        </motion.div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                      <div className="text-right">
+                        <motion.div 
+                          key={`${stock.symbol}-pct`}
+                          initial={{ backgroundColor: 'hsl(var(--destructive) / 0.3)' }}
+                          animate={{ backgroundColor: 'transparent' }}
+                          transition={{ duration: 0.5 }}
+                          className="text-xs text-destructive font-medium rounded px-1"
+                        >
+                          {stock.changePercent.toFixed(2)}%
+                        </motion.div>
+                        <div className="w-16 h-4 bg-destructive/20 rounded overflow-hidden mt-1">
+                          <motion.div 
+                            className="h-full bg-destructive rounded"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(Math.abs(stock.changePercent) * 10, 100)}%` }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               </div>
             </CardContent>
           </Card>
@@ -369,7 +301,7 @@ const Market = () => {
 
         {/* Live Option Chain */}
         <div>
-          <LiveOptionChain instrument="NIFTY" maxItems={5} />
+          <LiveOptionChainSimulated instrument="NIFTY" maxItems={5} />
         </div>
       </div>
 
@@ -390,26 +322,36 @@ const Market = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {mostActive.map((stock, i) => (
-                <motion.div
-                  key={stock.symbol}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/20 transition-colors"
-                >
-                  <div>
-                    <div className="font-medium">{stock.symbol}</div>
-                    <div className="text-sm text-muted-foreground">Vol: {stock.volume}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-bold">₹{stock.ltp.toFixed(2)}</div>
-                    <div className={`text-sm ${getChangeColor(stock.change)}`}>
-                      {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+              <AnimatePresence mode="popLayout">
+                {mostActive.map((stock, i) => (
+                  <motion.div
+                    key={stock.symbol}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/20 transition-colors"
+                  >
+                    <div>
+                      <div className="font-medium">{stock.symbol}</div>
+                      <div className="text-sm text-muted-foreground">Vol: {stock.volume}</div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="text-right">
+                      <motion.div 
+                        key={stock.ltp}
+                        initial={{ scale: 1.05 }}
+                        animate={{ scale: 1 }}
+                        className="font-bold"
+                      >
+                        ₹{stock.ltp.toFixed(2)}
+                      </motion.div>
+                      <div className={`text-sm ${getChangeColor(stock.change)}`}>
+                        {stock.change >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           </CardContent>
         </Card>
