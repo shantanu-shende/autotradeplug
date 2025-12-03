@@ -29,11 +29,11 @@ const Index = () => {
     
     setProfileLoading(true);
     try {
-      const { data: profile, error } = await supabase
+      const { data: profile, error } = await (supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
-        .single();
+        .eq('id', user.id)
+        .single() as any);
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error);

@@ -62,14 +62,14 @@ const PinSetup: React.FC<PinSetupProps> = ({
         throw new Error('User not found');
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('profiles')
         .update({
           phone_number: phoneNumber,
           pin_hash: pinHash,
           is_onboarded: true
         })
-        .eq('user_id', user.id);
+        .eq('id', user.id) as any);
 
       if (error) throw error;
 
