@@ -19,6 +19,7 @@ import {
 import MarketChart from '@/components/market/MarketChart';
 import AssetControls from '@/components/market/AssetControls';
 import LiveOptionChainSimulated from '@/components/market/LiveOptionChainSimulated';
+import { ForexTicker } from '@/components/market/ForexTicker';
 import { useRealtimeMarketData } from '@/hooks/useRealtimeMarketData';
 
 interface SectorData {
@@ -65,6 +66,9 @@ const Market = () => {
           <span>• Last update: {lastUpdate.toLocaleTimeString()}</span>
         </div>
       </div>
+
+      {/* Live Forex Ticker with Cross-Tab Sync */}
+      <ForexTicker />
 
       {/* Top Metrics Panel */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

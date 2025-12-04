@@ -1,1 +1,4 @@
 project_id = "gpbxdfrkpdzbalcxtovg"
+
+[functions.live-forex]
+verify_jwt = false
