@@ -65,13 +65,18 @@ serve(async (req) => {
       query = query.gte('pnl', parseFloat(min_pnl));
     }
 
+    // First get user's demo account IDs
+    const { data: demoAccounts } = await supabase
+      .from('demo_accounts')
+      .select('id')
+      .eq('user_id', user.id);
+    
+    const demoAccountIds = demoAccounts?.map(a => a.id) || [];
+    
     // Only get trades for user's demo accounts
-    query = query.in('demo_account_id', 
-      supabase
-        .from('demo_accounts')
-        .select('id')
-        .eq('user_id', user.id)
-    );
+    if (demoAccountIds.length > 0) {
+      query = query.in('demo_account_id', demoAccountIds);
+    }
 
     const { data: trades, error: tradesError } = await query
       .order('created_at', { ascending: false });
