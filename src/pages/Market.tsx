@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -14,10 +14,9 @@ import {
   ExternalLink,
   Expand,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  BarChart3
 } from 'lucide-react';
-import MarketChart from '@/components/market/MarketChart';
-import AssetControls from '@/components/market/AssetControls';
 import LiveOptionChainSimulated from '@/components/market/LiveOptionChainSimulated';
 import { ForexTicker } from '@/components/market/ForexTicker';
 import { useRealtimeMarketData } from '@/hooks/useRealtimeMarketData';
@@ -29,12 +28,8 @@ interface SectorData {
 }
 
 const Market = () => {
-  // Chart controls
-  const [tvSymbol, setTvSymbol] = useState<string>('NSE:NIFTY');
-  const [interval, setInterval] = useState<'1'|'5'|'60'|'D'|'W'|'M'>('D');
-  const [rsi, setRsi] = useState<boolean>(true);
-  const [ema, setEma] = useState<boolean>(false);
-
+  const navigate = useNavigate();
+  
   // Live market data from simulated realtime service
   const { indices, gainers, losers, mostActive, metrics, isLive, lastUpdate } = useRealtimeMarketData(2000);
 
@@ -65,6 +60,14 @@ const Market = () => {
           <span>{isLive ? 'Live' : 'Delayed'}</span>
           <span>• Last update: {lastUpdate.toLocaleTimeString()}</span>
         </div>
+        <Button 
+          size="sm" 
+          onClick={() => navigate('/trading-zone')}
+          className="gap-2"
+        >
+          <BarChart3 className="w-4 h-4" />
+          Trading Zone
+        </Button>
       </div>
 
       {/* Live Forex Ticker with Cross-Tab Sync */}
@@ -151,28 +154,6 @@ const Market = () => {
           </Card>
         </motion.div>
       </div>
-
-      {/* Centered TradingView Chart */}
-      <Card className="glass-panel">
-        <CardHeader className="space-y-2">
-          <CardTitle>Market Chart</CardTitle>
-          <AssetControls
-            symbol={tvSymbol}
-            onSymbolChange={setTvSymbol}
-            interval={interval}
-            onIntervalChange={setInterval}
-            rsi={rsi}
-            onRsiChange={setRsi}
-            ema={ema}
-            onEmaChange={setEma}
-          />
-        </CardHeader>
-        <CardContent>
-          <div className="relative">
-            <MarketChart symbol={tvSymbol} interval={interval} />
-          </div>
-        </CardContent>
-      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Top Gainers */}
