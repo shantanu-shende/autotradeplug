@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Wifi, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface PriceChange {
   pair: string;
@@ -13,6 +14,7 @@ export function ForexTicker() {
   const { ticks, isConnected, isLeader, lastUpdate } = useLiveForex();
   const [priceChanges, setPriceChanges] = useState<Map<string, PriceChange>>(new Map());
   const [prevPrices, setPrevPrices] = useState<Map<string, number>>(new Map());
+  const navigate = useNavigate();
 
   // Track price changes for animation
   useEffect(() => {
@@ -97,10 +99,13 @@ export function ForexTicker() {
                 layout
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className={`p-2 rounded-md border transition-colors ${
-                  isUp ? 'bg-green-500/10 border-green-500/30' :
-                  isDown ? 'bg-red-500/10 border-red-500/30' :
-                  'bg-muted/30 border-border/30'
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => navigate(`/trading-zone?symbol=FX:${tick.pair.replace('/', '')}`)}
+                className={`p-2 rounded-md border transition-colors cursor-pointer ${
+                  isUp ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20' :
+                  isDown ? 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20' :
+                  'bg-muted/30 border-border/30 hover:bg-muted/50'
                 }`}
               >
                 <div className="flex items-center justify-between">
