@@ -8,11 +8,18 @@ const corsHeaders = {
 // In-memory tick storage
 const latestTicks: Map<string, { pair: string; price: number; ts: number }> = new Map();
 
-// Forex pairs to track
-const FOREX_PAIRS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD'];
+// Forex pairs to track (Finnhub format: base currency quote)
+const FOREX_PAIRS = [
+  { symbol: 'OANDA:EUR_USD', display: 'EUR/USD' },
+  { symbol: 'OANDA:GBP_USD', display: 'GBP/USD' },
+  { symbol: 'OANDA:USD_JPY', display: 'USD/JPY' },
+  { symbol: 'OANDA:USD_CHF', display: 'USD/CHF' },
+  { symbol: 'OANDA:AUD_USD', display: 'AUD/USD' },
+  { symbol: 'OANDA:USD_CAD', display: 'USD/CAD' },
+];
 
-// Initialize with realistic prices
-const initPrices: Record<string, number> = {
+// Fallback prices if API fails
+const fallbackPrices: Record<string, number> = {
   'EUR/USD': 1.0875,
   'GBP/USD': 1.2650,
   'USD/JPY': 149.50,
@@ -21,34 +28,84 @@ const initPrices: Record<string, number> = {
   'USD/CAD': 1.3580,
 };
 
-// Initialize ticks
-FOREX_PAIRS.forEach(pair => {
-  latestTicks.set(pair, {
-    pair,
-    price: initPrices[pair],
-    ts: Date.now()
-  });
-});
+let lastFetchTime = 0;
+const FETCH_INTERVAL = 5000; // Fetch every 5 seconds to respect rate limits
 
-// Simulate price movement
-function updatePrices() {
-  FOREX_PAIRS.forEach(pair => {
-    const current = latestTicks.get(pair);
-    if (current) {
-      const volatility = pair.includes('JPY') ? 0.05 : 0.0003;
-      const change = (Math.random() - 0.5) * 2 * volatility;
-      const newPrice = Math.max(0.0001, current.price + change);
-      latestTicks.set(pair, {
-        pair,
-        price: Number(newPrice.toFixed(pair.includes('JPY') ? 2 : 4)),
+// Fetch real forex data from Finnhub
+async function fetchForexData() {
+  const apiKey = Deno.env.get('FINNHUB_API_KEY');
+  
+  if (!apiKey) {
+    console.log('FINNHUB_API_KEY not set, using fallback data');
+    initializeFallbackData();
+    return;
+  }
+
+  const now = Date.now();
+  if (now - lastFetchTime < FETCH_INTERVAL) {
+    return; // Rate limit protection
+  }
+  lastFetchTime = now;
+
+  try {
+    // Fetch quotes for each pair
+    const fetchPromises = FOREX_PAIRS.map(async ({ symbol, display }) => {
+      try {
+        const response = await fetch(
+          `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.c && data.c > 0) {
+          latestTicks.set(display, {
+            pair: display,
+            price: Number(data.c.toFixed(display.includes('JPY') ? 2 : 4)),
+            ts: Date.now()
+          });
+          console.log(`Updated ${display}: ${data.c}`);
+        }
+      } catch (err) {
+        console.error(`Error fetching ${display}:`, err);
+        // Keep existing data or use fallback
+        if (!latestTicks.has(display)) {
+          latestTicks.set(display, {
+            pair: display,
+            price: fallbackPrices[display],
+            ts: Date.now()
+          });
+        }
+      }
+    });
+
+    await Promise.all(fetchPromises);
+  } catch (error) {
+    console.error('Error fetching forex data:', error);
+    initializeFallbackData();
+  }
+}
+
+function initializeFallbackData() {
+  FOREX_PAIRS.forEach(({ display }) => {
+    if (!latestTicks.has(display)) {
+      latestTicks.set(display, {
+        pair: display,
+        price: fallbackPrices[display],
         ts: Date.now()
       });
     }
   });
 }
 
-// Update prices every second
-setInterval(updatePrices, 1000);
+// Initial fetch
+fetchForexData();
+
+// Update prices periodically
+setInterval(fetchForexData, FETCH_INTERVAL);
 
 serve(async (req) => {
   const url = new URL(req.url);
@@ -56,6 +113,11 @@ serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Ensure we have data
+  if (latestTicks.size === 0) {
+    await fetchForexData();
   }
 
   // Snapshot endpoint
@@ -78,20 +140,15 @@ serve(async (req) => {
       const ticks = Array.from(latestTicks.values());
       socket.send(JSON.stringify({ type: 'SNAPSHOT', payload: ticks }));
       
-      // Start streaming ticks
+      // Stream updates every second
       const interval = setInterval(() => {
         if (socket.readyState === WebSocket.OPEN) {
-          // Send random tick update
-          const pairs = Array.from(latestTicks.keys());
-          const randomPair = pairs[Math.floor(Math.random() * pairs.length)];
-          const tick = latestTicks.get(randomPair);
-          if (tick) {
-            socket.send(JSON.stringify({ type: 'TICK', payload: tick }));
-          }
+          const ticks = Array.from(latestTicks.values());
+          socket.send(JSON.stringify({ type: 'SNAPSHOT', payload: ticks }));
         } else {
           clearInterval(interval);
         }
-      }, 500);
+      }, 1000);
       
       socket.onclose = () => {
         console.log("Forex WebSocket client disconnected");
