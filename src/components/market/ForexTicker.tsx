@@ -1,4 +1,4 @@
-import { useLiveForex } from '@/contexts/LiveForexContext';
+import { useLiveForex, ForexTick } from '@/contexts/LiveForexContext';
 import { Badge } from '@/components/ui/badge';
 import { TrendingUp, TrendingDown, Wifi, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,6 +41,12 @@ export function ForexTicker() {
 
   const tickArray = Array.from(ticks.values());
 
+  // Get decimal places based on symbol
+  const getDecimals = (pair: string): number => {
+    if (pair.includes('JPY') || pair.includes('XAU') || pair.includes('XAG')) return 2;
+    return 4;
+  };
+
   if (tickArray.length === 0) {
     return (
       <div className="bg-card/50 backdrop-blur-sm rounded-lg p-4 border border-border/50">
@@ -53,7 +59,7 @@ export function ForexTicker() {
         </div>
         <div className="grid grid-cols-3 gap-2">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <div key={i} className="animate-pulse bg-muted/50 rounded h-12" />
+            <div key={i} className="animate-pulse bg-muted/50 rounded h-16" />
           ))}
         </div>
       </div>
@@ -63,7 +69,7 @@ export function ForexTicker() {
   return (
     <div className="bg-card/50 backdrop-blur-sm rounded-lg p-4 border border-border/50">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-foreground">Live Forex</h3>
+        <h3 className="text-sm font-medium text-foreground">Live Forex & Commodities</h3>
         <div className="flex items-center gap-2">
           {isLeader && (
             <Badge variant="secondary" className="text-xs">
@@ -86,12 +92,14 @@ export function ForexTicker() {
         </div>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
         <AnimatePresence>
           {tickArray.map(tick => {
             const change = priceChanges.get(tick.pair);
             const isUp = change?.direction === 'up';
             const isDown = change?.direction === 'down';
+            const decimals = getDecimals(tick.pair);
+            const dailyUp = (tick.changePercent ?? 0) >= 0;
             
             return (
               <motion.div
@@ -102,17 +110,18 @@ export function ForexTicker() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => navigate(`/trading-zone?symbol=FX:${tick.pair.replace('/', '')}`)}
-                className={`p-2 rounded-md border transition-colors cursor-pointer ${
+                className={`p-2.5 rounded-md border transition-colors cursor-pointer ${
                   isUp ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20' :
                   isDown ? 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20' :
                   'bg-muted/30 border-border/30 hover:bg-muted/50'
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">{tick.pair}</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-muted-foreground">{tick.pair}</span>
                   {isUp && <TrendingUp className="w-3 h-3 text-green-500" />}
                   {isDown && <TrendingDown className="w-3 h-3 text-red-500" />}
                 </div>
+                
                 <motion.div
                   key={tick.price}
                   initial={{ scale: 1.15, opacity: 0.7 }}
@@ -124,8 +133,22 @@ export function ForexTicker() {
                     'text-foreground'
                   }`}
                 >
-                  {tick.price.toFixed(tick.pair.includes('JPY') || tick.pair.includes('XAU') || tick.pair.includes('XAG') ? 2 : 4)}
+                  {tick.price.toFixed(decimals)}
                 </motion.div>
+                
+                {/* Daily Change Percentage */}
+                {tick.changePercent !== undefined && (
+                  <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${
+                    dailyUp ? 'text-green-500' : 'text-red-500'
+                  }`}>
+                    {dailyUp ? (
+                      <TrendingUp className="w-2.5 h-2.5" />
+                    ) : (
+                      <TrendingDown className="w-2.5 h-2.5" />
+                    )}
+                    <span>{dailyUp ? '+' : ''}{tick.changePercent.toFixed(2)}%</span>
+                  </div>
+                )}
               </motion.div>
             );
           })}

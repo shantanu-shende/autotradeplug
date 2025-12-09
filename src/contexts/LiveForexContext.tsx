@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 
-interface ForexTick {
+export interface ForexTick {
   pair: string;
   price: number;
+  change?: number;
+  changePercent?: number;
   ts: number;
 }
 
