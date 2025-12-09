@@ -39,11 +39,11 @@ const TradingZone = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/market')}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back
+            Back to Market
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Trading Zone</h1>
