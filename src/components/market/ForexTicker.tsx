@@ -115,15 +115,16 @@ export function ForexTicker() {
                 </div>
                 <motion.div
                   key={tick.price}
-                  initial={{ scale: 1.1 }}
-                  animate={{ scale: 1 }}
+                  initial={{ scale: 1.15, opacity: 0.7 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
                   className={`text-sm font-mono font-semibold ${
                     isUp ? 'text-green-500' :
                     isDown ? 'text-red-500' :
                     'text-foreground'
                   }`}
                 >
-                  {tick.price.toFixed(tick.pair.includes('JPY') ? 2 : 4)}
+                  {tick.price.toFixed(tick.pair.includes('JPY') || tick.pair.includes('XAU') || tick.pair.includes('XAG') ? 2 : 4)}
                 </motion.div>
               </motion.div>
             );
