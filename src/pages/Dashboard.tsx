@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import DashboardHome from '@/components/dashboard/DashboardHome';
 import Market from '@/pages/Market';
@@ -10,8 +11,15 @@ import StrategyManager from '@/components/strategy/StrategyManager';
 import BacktestCards from '@/components/backtest/BacktestCards';
 import NotificationOverlay from '@/components/notifications/NotificationOverlay';
 
-const Dashboard = ({ onLogout }: { onLogout: () => void }) => {
-  const [currentPage, setCurrentPage] = useState('dashboard');
+interface DashboardProps {
+  onLogout: () => void;
+  defaultTab?: string;
+}
+
+const Dashboard = ({ onLogout, defaultTab }: DashboardProps) => {
+  const location = useLocation();
+  const initialTab = (location.state as any)?.defaultTab || defaultTab || 'dashboard';
+  const [currentPage, setCurrentPage] = useState(initialTab);
   const [showNotifications, setShowNotifications] = useState(false);
 
   // Mock notifications data

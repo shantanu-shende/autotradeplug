@@ -1,9 +1,14 @@
 import { useLiveForex, ForexTick } from '@/contexts/LiveForexContext';
 import { Badge } from '@/components/ui/badge';
-import { TrendingUp, TrendingDown, Wifi, WifiOff } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wifi, WifiOff, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { 
+  instrumentRegistry, 
+  getInstrumentByInternalSymbol,
+  getDecimalsForSymbol 
+} from '@/data/instrumentRegistry';
 
 interface PriceChange {
   pair: string;
@@ -41,10 +46,20 @@ export function ForexTicker() {
 
   const tickArray = Array.from(ticks.values());
 
-  // Get decimal places based on symbol
+  // Get decimal places from registry
   const getDecimals = (pair: string): number => {
-    if (pair.includes('JPY') || pair.includes('XAU') || pair.includes('XAG')) return 2;
-    return 4;
+    const cleanSymbol = pair.replace('/', '');
+    return getDecimalsForSymbol(cleanSymbol);
+  };
+
+  // Navigate to trading zone with proper TradingView symbol from registry
+  const handleNavigate = (tick: ForexTick) => {
+    const cleanSymbol = tick.pair.replace('/', '');
+    const instrument = getInstrumentByInternalSymbol(cleanSymbol);
+    
+    if (instrument && instrument.supported) {
+      navigate(`/trading-zone?symbol=${encodeURIComponent(instrument.tradingview_symbol)}`);
+    }
   };
 
   if (tickArray.length === 0) {
@@ -69,7 +84,13 @@ export function ForexTicker() {
   return (
     <div className="bg-card/50 backdrop-blur-sm rounded-lg p-4 border border-border/50">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-foreground">Live Forex & Commodities</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium text-foreground">Live Forex & Commodities</h3>
+          <Badge variant="secondary" className="text-xs gap-1">
+            <CheckCircle2 className="w-3 h-3 text-green-500" />
+            Verified Feed
+          </Badge>
+        </div>
         <div className="flex items-center gap-2">
           {isLeader && (
             <Badge variant="secondary" className="text-xs">
@@ -109,7 +130,7 @@ export function ForexTicker() {
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => navigate(`/trading-zone?symbol=FX:${tick.pair.replace('/', '')}`)}
+                onClick={() => handleNavigate(tick)}
                 className={`p-2.5 rounded-md border transition-colors cursor-pointer ${
                   isUp ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/20' :
                   isDown ? 'bg-red-500/10 border-red-500/30 hover:bg-red-500/20' :
@@ -156,8 +177,12 @@ export function ForexTicker() {
       </div>
       
       {lastUpdate && (
-        <div className="mt-2 text-xs text-muted-foreground text-right">
-          Last update: {lastUpdate.toLocaleTimeString()}
+        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-green-500" />
+            Live data synced
+          </span>
+          <span>Last update: {lastUpdate.toLocaleTimeString()}</span>
         </div>
       )}
     </div>
