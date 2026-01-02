@@ -6,6 +6,7 @@ export interface ForexTick {
   change?: number;
   changePercent?: number;
   ts: number;
+  history?: number[]; // Price history for sparkline
 }
 
 interface LiveForexContextType {
