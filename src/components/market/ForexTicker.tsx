@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  instrumentRegistry, 
   getInstrumentByInternalSymbol,
   getDecimalsForSymbol 
 } from '@/data/instrumentRegistry';
+import { Sparkline } from './Sparkline';
 
 interface PriceChange {
   pair: string;
@@ -143,19 +143,31 @@ export function ForexTicker() {
                   {isDown && <TrendingDown className="w-3 h-3 text-red-500" />}
                 </div>
                 
-                <motion.div
-                  key={tick.price}
-                  initial={{ scale: 1.15, opacity: 0.7 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                  className={`text-sm font-mono font-semibold ${
-                    isUp ? 'text-green-500' :
-                    isDown ? 'text-red-500' :
-                    'text-foreground'
-                  }`}
-                >
-                  {tick.price.toFixed(decimals)}
-                </motion.div>
+                <div className="flex items-center justify-between gap-2">
+                  <motion.div
+                    key={tick.price}
+                    initial={{ scale: 1.15, opacity: 0.7 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    className={`text-sm font-mono font-semibold ${
+                      isUp ? 'text-green-500' :
+                      isDown ? 'text-red-500' :
+                      'text-foreground'
+                    }`}
+                  >
+                    {tick.price.toFixed(decimals)}
+                  </motion.div>
+                  
+                  {/* Mini Sparkline Chart */}
+                  {tick.history && tick.history.length > 1 && (
+                    <Sparkline 
+                      data={tick.history} 
+                      width={40} 
+                      height={16} 
+                      positive={dailyUp}
+                    />
+                  )}
+                </div>
                 
                 {/* Daily Change Percentage */}
                 {tick.changePercent !== undefined && (

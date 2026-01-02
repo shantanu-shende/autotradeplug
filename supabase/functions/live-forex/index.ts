@@ -5,16 +5,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// In-memory tick storage with change data
+// In-memory tick storage with change data and history
 interface TickData {
   pair: string;
   price: number;
   change: number;
   changePercent: number;
   ts: number;
+  history: number[]; // Last 24 price points for sparkline
 }
 
 const latestTicks: Map<string, TickData> = new Map();
+const MAX_HISTORY_POINTS = 24; // 24 points for sparkline
 
 // Forex pairs and commodities to track
 const FOREX_PAIRS = [
@@ -99,19 +101,30 @@ async function fetchForexData() {
         const changePercent = parseFloat(quoteData.percent_change || 0);
         const decimals = getDecimals(symbol);
         
+        // Get existing history or create new
+        const existing = latestTicks.get(symbol);
+        const history = existing?.history || [];
+        
+        // Add new price to history and keep last MAX_HISTORY_POINTS
+        history.push(Number(price.toFixed(decimals)));
+        if (history.length > MAX_HISTORY_POINTS) {
+          history.shift();
+        }
+        
         latestTicks.set(symbol, {
           pair: symbol,
           price: Number(price.toFixed(decimals)),
           change: Number(change.toFixed(decimals)),
           changePercent: Number(changePercent.toFixed(2)),
-          ts: Date.now()
+          ts: Date.now(),
+          history
         });
         console.log(`Updated ${symbol}: ${price} (${changePercent > 0 ? '+' : ''}${changePercent}%)`);
       } else if (quoteData && quoteData.status === 'error') {
         console.error(`Error for ${symbol}: ${quoteData.message}`);
         if (!latestTicks.has(symbol)) {
           const fb = fallbackData[symbol];
-          latestTicks.set(symbol, { pair: symbol, ...fb, ts: Date.now() });
+          latestTicks.set(symbol, { pair: symbol, ...fb, ts: Date.now(), history: [fb.price] });
         }
       }
     });
@@ -135,10 +148,33 @@ function initializeFallbackData() {
   FOREX_PAIRS.forEach(({ symbol }) => {
     if (!latestTicks.has(symbol)) {
       const fb = fallbackData[symbol];
-      latestTicks.set(symbol, { pair: symbol, ...fb, ts: now });
+      // Generate simulated history with slight variations for sparkline
+      const history = generateSimulatedHistory(fb.price, fb.changePercent);
+      latestTicks.set(symbol, { pair: symbol, ...fb, ts: now, history });
     }
   });
-  console.log('Initialized fallback data');
+  console.log('Initialized fallback data with history');
+}
+
+// Generate simulated price history for sparkline visualization
+function generateSimulatedHistory(currentPrice: number, changePercent: number): number[] {
+  const history: number[] = [];
+  const volatility = Math.abs(changePercent) / 100 * 0.5 || 0.002;
+  let price = currentPrice * (1 - (changePercent / 100)); // Start from previous close
+  
+  for (let i = 0; i < MAX_HISTORY_POINTS; i++) {
+    // Add some randomness while trending toward current price
+    const progress = i / MAX_HISTORY_POINTS;
+    const targetPrice = currentPrice;
+    const trend = (targetPrice - price) * 0.1;
+    const noise = (Math.random() - 0.5) * currentPrice * volatility;
+    price = price + trend + noise;
+    history.push(Number(price.toFixed(4)));
+  }
+  
+  // Ensure last point is close to current price
+  history[history.length - 1] = currentPrice;
+  return history;
 }
 
 // Initialize immediately
