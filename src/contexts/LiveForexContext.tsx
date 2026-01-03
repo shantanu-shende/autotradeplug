@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ForexTick {
   pair: string;
@@ -159,10 +160,27 @@ export function LiveForexProvider({
     }
   }, [wsUrl, updateTicks, electLeader]);
 
-  // Fetch initial snapshot via HTTP
+  // Fetch initial snapshot via HTTP with authentication
   const fetchSnapshot = useCallback(async () => {
     try {
-      const response = await fetch(`https://gpbxdfrkpdzbalcxtovg.supabase.co/functions/v1/live-forex?action=snapshot`);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        console.log('No auth session, skipping forex fetch');
+        return;
+      }
+
+      const response = await fetch(`https://gpbxdfrkpdzbalcxtovg.supabase.co/functions/v1/live-forex?action=snapshot`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdwYnhkZnJrcGR6YmFsY3h0b3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3Nzk1NDMsImV4cCI6MjA4MDM1NTU0M30.Ypz4XkMEguDMUHGPpKLC3eSVtaWmR5NaSPEhGYlMMWM',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      
       const data = await response.json();
       if (data.ticks) {
         updateTicks(data.ticks);
