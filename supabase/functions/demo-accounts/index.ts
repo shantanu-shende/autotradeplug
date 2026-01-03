@@ -6,6 +6,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation helpers
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ACCOUNT_NAME_REGEX = /^[a-zA-Z0-9\s\-_]+$/;
+
+function isValidUUID(value: unknown): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value);
+}
+
+function isValidAccountName(value: unknown): value is string {
+  return typeof value === 'string' && 
+         value.length >= 1 && 
+         value.length <= 50 && 
+         ACCOUNT_NAME_REGEX.test(value);
+}
+
+function isValidBalance(value: unknown): value is number {
+  return typeof value === 'number' && 
+         !isNaN(value) && 
+         value >= 5000 && 
+         value <= 250000;
+}
+
+function isValidAction(value: unknown): value is 'activate' | 'dump' | 'add_funds' {
+  return typeof value === 'string' && ['activate', 'dump', 'add_funds'].includes(value);
+}
+
+function isValidAmount(value: unknown): value is number {
+  return typeof value === 'number' && !isNaN(value) && value > 0;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -34,15 +64,15 @@ serve(async (req) => {
 
     switch (req.method) {
       case 'GET': {
-        // Get all demo accounts for the user
+        // Get all brokers for the user (using existing table)
         const { data: accounts, error } = await supabase
-          .from('demo_accounts')
+          .from('brokers')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Error fetching demo accounts:', error);
+          console.error('Error fetching accounts:', error);
           return new Response(JSON.stringify({ error: 'Failed to fetch accounts' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -55,59 +85,70 @@ serve(async (req) => {
       }
 
       case 'POST': {
-        const { account_name, initial_balance } = await req.json();
+        let body;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
 
-        if (!account_name || initial_balance < 5000 || initial_balance > 250000) {
+        const { account_name, initial_balance } = body;
+
+        // Validate inputs
+        if (!isValidAccountName(account_name)) {
           return new Response(JSON.stringify({ 
-            error: 'Invalid account name or balance (₹5,000 - ₹2,50,000)' 
+            error: 'Invalid account name. Must be 1-50 characters, alphanumeric with spaces, hyphens, or underscores.' 
           }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
 
-        // Get user's full name for hash generation
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('full_name')
-          .eq('id', user.id)
-          .single();
-
-        if (userError || !userData) {
-          return new Response(JSON.stringify({ error: 'User profile not found' }), {
+        if (!isValidBalance(initial_balance)) {
+          return new Response(JSON.stringify({ 
+            error: 'Invalid balance. Must be a number between ₹5,000 and ₹2,50,000.' 
+          }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
 
-        // Generate hash ID using the database function
-        const { data: hashResult, error: hashError } = await supabase
-          .rpc('generate_hash_id', { first_name: userData.full_name });
+        // Get user's profile for display name
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('id', user.id)
+          .maybeSingle();
 
-        if (hashError) {
-          console.error('Error generating hash ID:', hashError);
-          return new Response(JSON.stringify({ error: 'Failed to generate account ID' }), {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+        // Generate a simple hash ID
+        const now = new Date();
+        const dateStr = `${now.getDate().toString().padStart(2, '0')}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getFullYear().toString().slice(-2)}`;
+        const randomHash = Math.floor(1000 + Math.random() * 9000).toString();
+        const namePrefix = (userData?.display_name || 'USR').substring(0, 3).toUpperCase();
+        const hashId = `${namePrefix}-${dateStr}-${randomHash}`;
 
-        // Create demo account
+        // Create broker entry as demo account
         const { data: account, error } = await supabase
-          .from('demo_accounts')
+          .from('brokers')
           .insert({
             user_id: user.id,
-            hash_id: hashResult,
-            account_name,
-            balance: initial_balance,
-            initial_balance,
-            status: 'active'
+            broker_name: account_name,
+            status: 'connected',
+            metadata: { 
+              initial_balance, 
+              balance: initial_balance,
+              hash_id: hashId,
+              is_demo: true 
+            }
           })
           .select()
           .single();
 
         if (error) {
-          console.error('Error creating demo account:', error);
+          console.error('Error creating account:', error);
           return new Response(JSON.stringify({ error: 'Failed to create account' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -121,39 +162,57 @@ serve(async (req) => {
       }
 
       case 'PUT': {
-        const { account_id, action, amount } = await req.json();
-
-        if (!account_id || !action) {
-          return new Response(JSON.stringify({ error: 'Missing account_id or action' }), {
+        let body;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
 
-        let updateData: any = {};
+        const { account_id, action, amount } = body;
+
+        // Validate inputs
+        if (!isValidUUID(account_id)) {
+          return new Response(JSON.stringify({ error: 'Invalid account_id format' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (!isValidAction(action)) {
+          return new Response(JSON.stringify({ error: 'Invalid action. Must be one of: activate, dump, add_funds' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        let updateData: Record<string, unknown> = {};
 
         switch (action) {
           case 'activate':
-            updateData = { status: 'active' };
+            updateData = { status: 'connected' };
             break;
           case 'dump':
-            updateData = { status: 'dumped' };
+            updateData = { status: 'disconnected' };
             break;
           case 'add_funds':
-            if (!amount || amount <= 0) {
-              return new Response(JSON.stringify({ error: 'Invalid amount' }), {
+            if (!isValidAmount(amount)) {
+              return new Response(JSON.stringify({ error: 'Invalid amount. Must be a positive number.' }), {
                 status: 400,
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
               });
             }
             
-            // Get current balance
+            // Get current balance from metadata
             const { data: currentAccount, error: fetchError } = await supabase
-              .from('demo_accounts')
-              .select('balance')
+              .from('brokers')
+              .select('metadata')
               .eq('id', account_id)
               .eq('user_id', user.id)
-              .single();
+              .maybeSingle();
 
             if (fetchError || !currentAccount) {
               return new Response(JSON.stringify({ error: 'Account not found' }), {
@@ -162,7 +221,10 @@ serve(async (req) => {
               });
             }
 
-            const newBalance = parseFloat(currentAccount.balance) + amount;
+            const currentMetadata = currentAccount.metadata as Record<string, unknown> || {};
+            const currentBalance = typeof currentMetadata.balance === 'number' ? currentMetadata.balance : 0;
+            const newBalance = currentBalance + amount;
+            
             if (newBalance > 250000) {
               return new Response(JSON.stringify({ error: 'Maximum balance limit exceeded (₹2,50,000)' }), {
                 status: 400,
@@ -170,17 +232,17 @@ serve(async (req) => {
               });
             }
 
-            updateData = { balance: newBalance };
+            updateData = { 
+              metadata: { 
+                ...currentMetadata, 
+                balance: newBalance 
+              } 
+            };
             break;
-          default:
-            return new Response(JSON.stringify({ error: 'Invalid action' }), {
-              status: 400,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
         }
 
         const { data: updatedAccount, error } = await supabase
-          .from('demo_accounts')
+          .from('brokers')
           .update(updateData)
           .eq('id', account_id)
           .eq('user_id', user.id)
@@ -188,7 +250,7 @@ serve(async (req) => {
           .single();
 
         if (error) {
-          console.error('Error updating demo account:', error);
+          console.error('Error updating account:', error);
           return new Response(JSON.stringify({ error: 'Failed to update account' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -204,21 +266,21 @@ serve(async (req) => {
         const url = new URL(req.url);
         const account_id = url.searchParams.get('account_id');
 
-        if (!account_id) {
-          return new Response(JSON.stringify({ error: 'Missing account_id' }), {
+        if (!isValidUUID(account_id)) {
+          return new Response(JSON.stringify({ error: 'Invalid or missing account_id' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
 
         const { error } = await supabase
-          .from('demo_accounts')
+          .from('brokers')
           .delete()
           .eq('id', account_id)
           .eq('user_id', user.id);
 
         if (error) {
-          console.error('Error deleting demo account:', error);
+          console.error('Error deleting account:', error);
           return new Response(JSON.stringify({ error: 'Failed to delete account' }), {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
