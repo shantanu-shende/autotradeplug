@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -177,6 +178,27 @@ function generateSimulatedHistory(currentPrice: number, changePercent: number): 
   return history;
 }
 
+// Helper function to verify user authentication
+async function verifyAuth(req: Request): Promise<{ user: any; error: string | null }> {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {
+      global: {
+        headers: { Authorization: req.headers.get('Authorization') ?? '' },
+      },
+    }
+  );
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if (authError || !user) {
+    return { user: null, error: 'Unauthorized' };
+  }
+  
+  return { user, error: null };
+}
+
 // Initialize immediately
 initializeFallbackData();
 fetchForexData();
@@ -185,9 +207,22 @@ setInterval(fetchForexData, FETCH_INTERVAL);
 serve(async (req) => {
   const url = new URL(req.url);
   
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Verify user authentication for all requests
+  const { user, error: authError } = await verifyAuth(req);
+  if (authError || !user) {
+    console.error('Authentication failed for live-forex request');
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  console.log(`Authenticated user ${user.id} accessing live-forex`);
 
   if (url.pathname.endsWith('/snapshot') || url.searchParams.get('action') === 'snapshot') {
     const ticks = Array.from(latestTicks.values());
@@ -201,7 +236,7 @@ serve(async (req) => {
     const { socket, response } = Deno.upgradeWebSocket(req);
     
     socket.onopen = () => {
-      console.log("Forex WebSocket client connected");
+      console.log(`Forex WebSocket client connected (user: ${user.id})`);
       const ticks = Array.from(latestTicks.values());
       socket.send(JSON.stringify({ type: 'SNAPSHOT', payload: ticks }));
       
@@ -215,7 +250,7 @@ serve(async (req) => {
       }, 2000);
       
       socket.onclose = () => {
-        console.log("Forex WebSocket client disconnected");
+        console.log(`Forex WebSocket client disconnected (user: ${user.id})`);
         clearInterval(interval);
       };
     };

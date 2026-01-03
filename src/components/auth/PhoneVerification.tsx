@@ -78,10 +78,10 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({
         }
         throw error;
       }
-      // In production, this OTP would be sent via SMS
+      // In production, this OTP would be sent via SMS using a service like Twilio
       // The OTP is already securely hashed and stored in the database
       // User will enter the code they received via SMS for server-side verification
-      console.log('OTP sent to phone (development only):', otpCode);
+      // TODO: Integrate SMS provider here - await sendSMS(phoneNumber, otpCode);
       
       toast({
         title: "OTP Sent",
