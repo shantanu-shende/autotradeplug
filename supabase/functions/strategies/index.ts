@@ -6,6 +6,34 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation helpers
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const STRATEGY_NAME_REGEX = /^[a-zA-Z0-9\s\-_]+$/;
+
+function isValidUUID(value: unknown): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value);
+}
+
+function isValidStrategyName(value: unknown): value is string {
+  return typeof value === 'string' && 
+         value.length >= 1 && 
+         value.length <= 100 && 
+         STRATEGY_NAME_REGEX.test(value);
+}
+
+function isValidDescription(value: unknown): value is string | undefined {
+  if (value === undefined || value === null) return true;
+  return typeof value === 'string' && value.length <= 500;
+}
+
+function isValidConfig(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isValidRiskLevel(value: unknown): value is string {
+  return typeof value === 'string' && ['low', 'medium', 'high'].includes(value);
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -34,12 +62,11 @@ serve(async (req) => {
 
     switch (req.method) {
       case 'GET': {
-        // Get all available strategies (predefined + user's custom)
+        // Get all user strategies
         const { data: strategies, error } = await supabase
-          .from('strategies')
+          .from('user_strategies')
           .select('*')
-          .or(`user_id.eq.${user.id},is_predefined.eq.true`)
-          .order('is_predefined', { ascending: false })
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -59,24 +86,41 @@ serve(async (req) => {
         const url = new URL(req.url);
         const action = url.searchParams.get('action');
 
-        if (action === 'deploy') {
-          // Deploy strategy to demo account
-          const { demo_account_id, strategy_id } = await req.json();
+        let body;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
 
-          if (!demo_account_id || !strategy_id) {
-            return new Response(JSON.stringify({ error: 'Missing demo_account_id or strategy_id' }), {
+        if (action === 'deploy') {
+          // Deploy strategy to demo account (broker)
+          const { demo_account_id, strategy_id } = body;
+
+          if (!isValidUUID(strategy_id)) {
+            return new Response(JSON.stringify({ error: 'Invalid strategy_id format' }), {
               status: 400,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             });
           }
 
-          // Verify the demo account belongs to the user
+          if (!demo_account_id || typeof demo_account_id !== 'string') {
+            return new Response(JSON.stringify({ error: 'Invalid demo_account_id' }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+
+          // Verify the broker/demo account belongs to the user
           const { data: account, error: accountError } = await supabase
-            .from('demo_accounts')
+            .from('brokers')
             .select('id, status')
             .eq('id', demo_account_id)
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
           if (accountError || !account) {
             return new Response(JSON.stringify({ error: 'Demo account not found' }), {
@@ -85,7 +129,7 @@ serve(async (req) => {
             });
           }
 
-          if (account.status !== 'active') {
+          if (account.status !== 'connected') {
             return new Response(JSON.stringify({ error: 'Demo account must be active to deploy strategies' }), {
               status: 400,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -98,12 +142,12 @@ serve(async (req) => {
             .insert({
               demo_account_id,
               strategy_id,
-              is_active: true
+              user_id: user.id,
+              status: 'running'
             })
             .select(`
               *,
-              strategy:strategies(*),
-              demo_account:demo_accounts(*)
+              strategy:user_strategies(*)
             `)
             .single();
 
@@ -121,23 +165,51 @@ serve(async (req) => {
           });
         } else {
           // Create custom strategy
-          const { name, description, config } = await req.json();
+          const { strategy_name, description, config, risk_level } = body;
 
-          if (!name || !config) {
-            return new Response(JSON.stringify({ error: 'Missing name or config' }), {
+          if (!isValidStrategyName(strategy_name)) {
+            return new Response(JSON.stringify({ 
+              error: 'Invalid strategy name. Must be 1-100 characters, alphanumeric with spaces, hyphens, or underscores.' 
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+
+          if (!isValidDescription(description)) {
+            return new Response(JSON.stringify({ 
+              error: 'Invalid description. Must be less than 500 characters.' 
+            }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+
+          if (config !== undefined && !isValidConfig(config)) {
+            return new Response(JSON.stringify({ error: 'Invalid config format' }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+
+          if (risk_level !== undefined && !isValidRiskLevel(risk_level)) {
+            return new Response(JSON.stringify({ 
+              error: 'Invalid risk level. Must be one of: low, medium, high' 
+            }), {
               status: 400,
               headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             });
           }
 
           const { data: strategy, error } = await supabase
-            .from('strategies')
+            .from('user_strategies')
             .insert({
               user_id: user.id,
-              name,
-              description,
-              config,
-              is_predefined: false
+              strategy_name,
+              description: description || null,
+              config: config || {},
+              risk_level: risk_level || 'medium',
+              status: 'draft'
             })
             .select()
             .single();
@@ -158,10 +230,30 @@ serve(async (req) => {
       }
 
       case 'PUT': {
-        const { deployment_id, is_active } = await req.json();
+        let body;
+        try {
+          body = await req.json();
+        } catch {
+          return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
 
-        if (!deployment_id || is_active === undefined) {
-          return new Response(JSON.stringify({ error: 'Missing deployment_id or is_active' }), {
+        const { deployment_id, status } = body;
+
+        if (!isValidUUID(deployment_id)) {
+          return new Response(JSON.stringify({ error: 'Invalid deployment_id format' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const validStatuses = ['running', 'paused', 'stopped'];
+        if (typeof status !== 'string' || !validStatuses.includes(status)) {
+          return new Response(JSON.stringify({ 
+            error: 'Invalid status. Must be one of: running, paused, stopped' 
+          }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -170,12 +262,12 @@ serve(async (req) => {
         // Update deployment status
         const { data: deployment, error } = await supabase
           .from('deployed_strategies')
-          .update({ is_active })
+          .update({ status })
           .eq('id', deployment_id)
+          .eq('user_id', user.id)
           .select(`
             *,
-            strategy:strategies(*),
-            demo_account:demo_accounts(*)
+            strategy:user_strategies(*)
           `)
           .single();
 

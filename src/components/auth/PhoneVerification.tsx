@@ -78,9 +78,10 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({
         }
         throw error;
       }
-
-      // Store the plain OTP temporarily for verification (in production, this would be sent via SMS)
-      sessionStorage.setItem('temp_otp', otpCode);
+      // In production, this OTP would be sent via SMS
+      // The OTP is already securely hashed and stored in the database
+      // User will enter the code they received via SMS for server-side verification
+      console.log('OTP sent to phone (development only):', otpCode);
       
       toast({
         title: "OTP Sent",
@@ -131,9 +132,6 @@ const PhoneVerification: React.FC<PhoneVerificationProps> = ({
         });
         return;
       }
-
-      // Clear the temporary OTP from session storage
-      sessionStorage.removeItem('temp_otp');
 
       toast({
         title: "Phone Verified",

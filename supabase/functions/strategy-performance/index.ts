@@ -6,6 +6,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation helpers
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUUID(value: unknown): value is string {
+  return typeof value === 'string' && UUID_REGEX.test(value);
+}
+
+function isValidNumber(value: string | null): boolean {
+  if (value === null) return true;
+  const num = parseFloat(value);
+  return !isNaN(num) && isFinite(num);
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -42,17 +55,31 @@ serve(async (req) => {
     const url = new URL(req.url);
     const demo_account_id = url.searchParams.get('demo_account_id');
     const strategy_id = url.searchParams.get('strategy_id');
-    const min_pnl = url.searchParams.get('min_pnl');
 
+    // Validate query parameters
+    if (demo_account_id && !isValidUUID(demo_account_id)) {
+      return new Response(JSON.stringify({ error: 'Invalid demo_account_id format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (strategy_id && !isValidUUID(strategy_id)) {
+      return new Response(JSON.stringify({ error: 'Invalid strategy_id format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Get user's deployed strategies with related data
     let query = supabase
-      .from('trades')
+      .from('deployed_strategies')
       .select(`
         *,
-        strategy:strategies(*),
-        demo_account:demo_accounts(*)
-      `);
+        strategy:user_strategies(*)
+      `)
+      .eq('user_id', user.id);
 
-    // Add filters based on query parameters
     if (demo_account_id) {
       query = query.eq('demo_account_id', demo_account_id);
     }
@@ -61,124 +88,86 @@ serve(async (req) => {
       query = query.eq('strategy_id', strategy_id);
     }
 
-    if (min_pnl) {
-      query = query.gte('pnl', parseFloat(min_pnl));
-    }
+    const { data: deployments, error: deploymentsError } = await query
+      .order('deployed_at', { ascending: false });
 
-    // First get user's demo account IDs
-    const { data: demoAccounts } = await supabase
-      .from('demo_accounts')
-      .select('id')
-      .eq('user_id', user.id);
-    
-    const demoAccountIds = demoAccounts?.map(a => a.id) || [];
-    
-    // Only get trades for user's demo accounts
-    if (demoAccountIds.length > 0) {
-      query = query.in('demo_account_id', demoAccountIds);
-    }
-
-    const { data: trades, error: tradesError } = await query
-      .order('created_at', { ascending: false });
-
-    if (tradesError) {
-      console.error('Error fetching trades:', tradesError);
-      return new Response(JSON.stringify({ error: 'Failed to fetch trades' }), {
+    if (deploymentsError) {
+      console.error('Error fetching deployments:', deploymentsError);
+      return new Response(JSON.stringify({ error: 'Failed to fetch deployments' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Calculate performance metrics
-    const totalTrades = trades.length;
-    const executedTrades = trades.filter(t => t.status === 'executed');
-    const totalPnL = executedTrades.reduce((sum, trade) => sum + (parseFloat(trade.pnl || 0)), 0);
-    const winningTrades = executedTrades.filter(t => parseFloat(t.pnl || 0) > 0);
-    const losingTrades = executedTrades.filter(t => parseFloat(t.pnl || 0) < 0);
-    const winRate = executedTrades.length > 0 ? (winningTrades.length / executedTrades.length) * 100 : 0;
-    
+    // Get user's brokers (demo accounts) for account info
+    const { data: brokers, error: brokersError } = await supabase
+      .from('brokers')
+      .select('*')
+      .eq('user_id', user.id);
+
+    if (brokersError) {
+      console.error('Error fetching brokers:', brokersError);
+    }
+
+    // Calculate performance metrics based on deployments
+    const totalDeployments = deployments?.length || 0;
+    const activeDeployments = deployments?.filter(d => d.status === 'running').length || 0;
+    const pausedDeployments = deployments?.filter(d => d.status === 'paused').length || 0;
+
     // Group by strategy for strategy-wise performance
-    const strategyPerformance = trades.reduce((acc, trade) => {
-      const strategyId = trade.strategy_id;
+    const strategyPerformance = (deployments || []).reduce((acc, deployment) => {
+      const strategyId = deployment.strategy_id;
+      if (!strategyId) return acc;
+      
       if (!acc[strategyId]) {
         acc[strategyId] = {
-          strategy: trade.strategy,
-          total_trades: 0,
-          executed_trades: 0,
-          total_pnl: 0,
-          winning_trades: 0,
-          losing_trades: 0,
-          win_rate: 0
+          strategy: deployment.strategy,
+          total_deployments: 0,
+          active_deployments: 0,
+          paused_deployments: 0
         };
       }
       
-      acc[strategyId].total_trades++;
-      if (trade.status === 'executed') {
-        acc[strategyId].executed_trades++;
-        const pnl = parseFloat(trade.pnl || 0);
-        acc[strategyId].total_pnl += pnl;
-        if (pnl > 0) acc[strategyId].winning_trades++;
-        if (pnl < 0) acc[strategyId].losing_trades++;
-      }
-      
-      acc[strategyId].win_rate = acc[strategyId].executed_trades > 0 
-        ? (acc[strategyId].winning_trades / acc[strategyId].executed_trades) * 100 
-        : 0;
+      acc[strategyId].total_deployments++;
+      if (deployment.status === 'running') acc[strategyId].active_deployments++;
+      if (deployment.status === 'paused') acc[strategyId].paused_deployments++;
       
       return acc;
-    }, {} as any);
+    }, {} as Record<string, unknown>);
 
     // Group by demo account for account-wise performance
-    const accountPerformance = trades.reduce((acc, trade) => {
-      const accountId = trade.demo_account_id;
+    const accountPerformance = (deployments || []).reduce((acc, deployment) => {
+      const accountId = deployment.demo_account_id;
+      if (!accountId) return acc;
+      
+      const broker = brokers?.find(b => b.id === accountId);
+      
       if (!acc[accountId]) {
         acc[accountId] = {
-          demo_account: trade.demo_account,
-          total_trades: 0,
-          executed_trades: 0,
-          total_pnl: 0,
-          winning_trades: 0,
-          losing_trades: 0,
-          win_rate: 0
+          demo_account: broker || { id: accountId },
+          total_deployments: 0,
+          active_deployments: 0,
+          paused_deployments: 0
         };
       }
       
-      acc[accountId].total_trades++;
-      if (trade.status === 'executed') {
-        acc[accountId].executed_trades++;
-        const pnl = parseFloat(trade.pnl || 0);
-        acc[accountId].total_pnl += pnl;
-        if (pnl > 0) acc[accountId].winning_trades++;
-        if (pnl < 0) acc[accountId].losing_trades++;
-      }
-      
-      acc[accountId].win_rate = acc[accountId].executed_trades > 0 
-        ? (acc[accountId].winning_trades / acc[accountId].executed_trades) * 100 
-        : 0;
+      acc[accountId].total_deployments++;
+      if (deployment.status === 'running') acc[accountId].active_deployments++;
+      if (deployment.status === 'paused') acc[accountId].paused_deployments++;
       
       return acc;
-    }, {} as any);
+    }, {} as Record<string, unknown>);
 
     const performance = {
       overview: {
-        total_trades: totalTrades,
-        executed_trades: executedTrades.length,
-        pending_trades: trades.filter(t => t.status === 'pending').length,
-        cancelled_trades: trades.filter(t => t.status === 'cancelled').length,
-        total_pnl: totalPnL,
-        winning_trades: winningTrades.length,
-        losing_trades: losingTrades.length,
-        win_rate: winRate,
-        average_win: winningTrades.length > 0 
-          ? winningTrades.reduce((sum, t) => sum + parseFloat(t.pnl || 0), 0) / winningTrades.length 
-          : 0,
-        average_loss: losingTrades.length > 0 
-          ? losingTrades.reduce((sum, t) => sum + parseFloat(t.pnl || 0), 0) / losingTrades.length 
-          : 0
+        total_deployments: totalDeployments,
+        active_deployments: activeDeployments,
+        paused_deployments: pausedDeployments,
+        stopped_deployments: deployments?.filter(d => d.status === 'stopped').length || 0
       },
       by_strategy: Object.values(strategyPerformance),
       by_account: Object.values(accountPerformance),
-      recent_trades: trades.slice(0, 10)
+      recent_deployments: (deployments || []).slice(0, 10)
     };
 
     return new Response(JSON.stringify({ performance }), {
