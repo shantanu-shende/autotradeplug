@@ -5,7 +5,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Lock, Eye, EyeOff } from 'lucide-react';
-import bcrypt from 'bcryptjs';
 
 interface PinSetupProps {
   phoneNumber: string;
@@ -51,27 +50,20 @@ const PinSetup: React.FC<PinSetupProps> = ({
 
     setLoading(true);
     try {
-      // Hash the PIN before storing
-      const saltRounds = 10;
-      const pinHash = await bcrypt.hash(pin, saltRounds);
-
-      // Update user profile with phone number and PIN
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const { error } = await (supabase
-        .from('profiles')
-        .update({
-          phone_number: phoneNumber,
-          pin_hash: pinHash,
-          is_onboarded: true
-        })
-        .eq('id', user.id) as any);
+      // Call server-side PIN operations Edge Function
+      const { data, error } = await supabase.functions.invoke('pin-operations', {
+        body: {
+          action: 'set',
+          pin: pin,
+          phone_number: phoneNumber
+        }
+      });
 
       if (error) throw error;
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to set PIN');
+      }
 
       // Also update auth metadata
       await supabase.auth.updateUser({

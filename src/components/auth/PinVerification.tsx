@@ -5,7 +5,6 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
-import bcrypt from 'bcryptjs';
 
 interface PinVerificationProps {
   onPinVerified: () => void;
@@ -47,34 +46,17 @@ const PinVerification: React.FC<PinVerificationProps> = ({
 
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      // Get user profile with PIN hash
-      const { data: profile, error } = await (supabase
-        .from('profiles')
-        .select('pin_hash')
-        .eq('id', user.id)
-        .single() as any);
+      // Call server-side PIN verification Edge Function
+      const { data, error } = await supabase.functions.invoke('pin-operations', {
+        body: {
+          action: 'verify',
+          pin: pin
+        }
+      });
 
       if (error) throw error;
 
-      if (!profile?.pin_hash) {
-        toast({
-          title: "PIN Not Set",
-          description: "Please contact support to set up your PIN",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Verify PIN
-      const isValidPin = await bcrypt.compare(pin, profile.pin_hash);
-
-      if (isValidPin) {
+      if (data?.valid) {
         toast({
           title: "PIN Verified",
           description: "Welcome back!",
