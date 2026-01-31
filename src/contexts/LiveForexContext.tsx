@@ -112,12 +112,23 @@ export function LiveForexProvider({
     }
   }, []);
 
-  // Connect to WebSocket
-  const connectWebSocket = useCallback(() => {
+  // Connect to WebSocket with authentication
+  const connectWebSocket = useCallback(async () => {
     if (!wsUrl || wsRef.current?.readyState === WebSocket.OPEN) return;
     
     try {
-      const ws = new WebSocket(wsUrl);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.access_token) {
+        console.log('No auth session, skipping WebSocket connection');
+        return;
+      }
+
+      // Pass auth token as query parameter since WebSocket doesn't support custom headers
+      const wsUrlWithAuth = new URL(wsUrl);
+      wsUrlWithAuth.searchParams.set('token', session.access_token);
+      
+      const ws = new WebSocket(wsUrlWithAuth.toString());
       wsRef.current = ws;
       
       ws.onopen = () => {
