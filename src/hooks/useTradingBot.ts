@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { debounce } from '@/utils/concurrency';
 
 export interface TradingBot {
   id: string;
@@ -39,6 +40,9 @@ export function useTradingBot() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // OPTIMIZATION: Track pending updates to avoid duplicate refetches
+  const pendingUpdatesRef = useRef<Set<string>>(new Set());
+
   const callBotAPI = useCallback(async (action: string, data?: Record<string, unknown>) => {
     if (!session?.access_token) {
       throw new Error('Not authenticated');
@@ -77,6 +81,9 @@ export function useTradingBot() {
     }
   }, [callBotAPI]);
 
+  // OPTIMIZATION: Debounced version of fetchBots to batch multiple calls
+  const debouncedFetchBots = useRef(debounce(() => fetchBots(), 300)).current;
+
   const fetchBotDetails = useCallback(async (botId: string) => {
     setLoading(true);
     setError(null);
@@ -108,15 +115,22 @@ export function useTradingBot() {
           config,
         },
       });
-      await fetchBots();
-      return result.bot;
+
+      // OPTIMIZATION: Optimistic update - add bot to local state immediately
+      const newBot = result.bot;
+      setBots((prev) => [...prev, newBot]);
+
+      // Refetch in background (debounced to avoid redundant calls)
+      debouncedFetchBots();
+
+      return newBot;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create bot');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [callBotAPI, fetchBots]);
+  }, [callBotAPI, debouncedFetchBots]);
 
   const updateBot = useCallback(async (botId: string, updates: Partial<{ bot_name: string; strategy_type: TradingBot['strategy_type']; config: BotConfig }>) => {
     setLoading(true);
@@ -126,10 +140,19 @@ export function useTradingBot() {
         bot_id: botId,
         data: updates,
       });
-      await fetchBots();
+
+      // OPTIMIZATION: Optimistic update
+      setBots((prev) =>
+        prev.map((bot) => (bot.id === botId ? result.bot : bot))
+      );
+
       if (currentBot?.id === botId) {
         setCurrentBot(result.bot);
       }
+
+      // Batch refetch with debouncing
+      debouncedFetchBots();
+
       return result.bot;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update bot');
@@ -137,34 +160,51 @@ export function useTradingBot() {
     } finally {
       setLoading(false);
     }
-  }, [callBotAPI, fetchBots, currentBot?.id]);
+  }, [callBotAPI, debouncedFetchBots, currentBot?.id]);
 
   const deleteBot = useCallback(async (botId: string) => {
     setLoading(true);
     setError(null);
     try {
       await callBotAPI('delete', { bot_id: botId });
-      await fetchBots();
+
+      // OPTIMIZATION: Optimistic delete
+      setBots((prev) => prev.filter((bot) => bot.id !== botId));
+
       if (currentBot?.id === botId) {
         setCurrentBot(null);
       }
+
+      // Batch refetch with debouncing
+      debouncedFetchBots();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete bot');
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [callBotAPI, fetchBots, currentBot?.id]);
+  }, [callBotAPI, debouncedFetchBots, currentBot?.id]);
 
   const startBot = useCallback(async (botId: string) => {
     setLoading(true);
     setError(null);
     try {
       const result = await callBotAPI('start', { bot_id: botId });
-      await fetchBots();
+
+      // OPTIMIZATION: Optimistic update
+      setBots((prev) =>
+        prev.map((bot) =>
+          bot.id === botId ? { ...bot, status: 'running' as const } : bot
+        )
+      );
+
       if (currentBot?.id === botId) {
         setCurrentBot(result.bot);
       }
+
+      // Batch refetch with debouncing
+      debouncedFetchBots();
+
       return result;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start bot');
@@ -172,17 +212,28 @@ export function useTradingBot() {
     } finally {
       setLoading(false);
     }
-  }, [callBotAPI, fetchBots, currentBot?.id]);
+  }, [callBotAPI, debouncedFetchBots, currentBot?.id]);
 
   const stopBot = useCallback(async (botId: string) => {
     setLoading(true);
     setError(null);
     try {
       const result = await callBotAPI('stop', { bot_id: botId });
-      await fetchBots();
+
+      // OPTIMIZATION: Optimistic update
+      setBots((prev) =>
+        prev.map((bot) =>
+          bot.id === botId ? { ...bot, status: 'stopped' as const } : bot
+        )
+      );
+
       if (currentBot?.id === botId) {
         setCurrentBot(result.bot);
       }
+
+      // Batch refetch with debouncing
+      debouncedFetchBots();
+
       return result;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to stop bot');
@@ -190,17 +241,28 @@ export function useTradingBot() {
     } finally {
       setLoading(false);
     }
-  }, [callBotAPI, fetchBots, currentBot?.id]);
+  }, [callBotAPI, debouncedFetchBots, currentBot?.id]);
 
   const pauseBot = useCallback(async (botId: string) => {
     setLoading(true);
     setError(null);
     try {
       const result = await callBotAPI('pause', { bot_id: botId });
-      await fetchBots();
+
+      // OPTIMIZATION: Optimistic update
+      setBots((prev) =>
+        prev.map((bot) =>
+          bot.id === botId ? { ...bot, status: 'paused' as const } : bot
+        )
+      );
+
       if (currentBot?.id === botId) {
         setCurrentBot(result.bot);
       }
+
+      // Batch refetch with debouncing
+      debouncedFetchBots();
+
       return result;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to pause bot');
@@ -208,7 +270,7 @@ export function useTradingBot() {
     } finally {
       setLoading(false);
     }
-  }, [callBotAPI, fetchBots, currentBot?.id]);
+  }, [callBotAPI, debouncedFetchBots, currentBot?.id]);
 
   const executeOrder = useCallback(async (params: {
     bot_id?: string;

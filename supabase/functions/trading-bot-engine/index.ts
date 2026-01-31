@@ -262,79 +262,98 @@ serve(async (req) => {
           throw new Error('portfolio_id, symbol, side, and volume are required');
         }
 
-        // Get portfolio
-        const { data: portfolio, error: portError } = await supabase
-          .from('portfolios')
-          .select('*')
-          .eq('id', data.portfolio_id)
-          .single();
+        // OPTIMIZATION: Parallelize fetching non-dependent data
+        // Fetch portfolio and check existing positions in parallel
+        const [portfolioResponse, existingPositionsResponse] = await Promise.all([
+          supabase
+            .from('portfolios')
+            .select('*')
+            .eq('id', data.portfolio_id)
+            .single(),
+          supabase
+            .from('positions')
+            .select('*')
+            .eq('portfolio_id', data.portfolio_id)
+            .eq('symbol', data.symbol)
+            .limit(1)
+        ]);
 
+        const { data: portfolio, error: portError } = portfolioResponse;
         if (portError) throw portError;
 
         // For demo portfolios, simulate order execution
         const executedPrice = data.price || Math.random() * 100 + 1; // Simulated price
-        
-        // Create order
-        const { data: order, error: orderError } = await supabase
-          .from('orders')
-          .insert({
-            portfolio_id: data.portfolio_id,
-            user_id: user.id,
-            bot_id: bot_id || null,
-            symbol: data.symbol,
-            order_type: data.order_type || 'market',
-            side: data.side,
-            volume: data.volume,
-            price: data.price,
-            status: 'filled',
-            filled_price: executedPrice,
-            filled_at: new Date().toISOString(),
-          })
-          .select()
-          .single();
+
+        // OPTIMIZATION: Create order and position in parallel (independent writes)
+        const [orderResponse, positionResponse] = await Promise.all([
+          supabase
+            .from('orders')
+            .insert({
+              portfolio_id: data.portfolio_id,
+              user_id: user.id,
+              bot_id: bot_id || null,
+              symbol: data.symbol,
+              order_type: data.order_type || 'market',
+              side: data.side,
+              volume: data.volume,
+              price: data.price,
+              status: 'filled',
+              filled_price: executedPrice,
+              filled_at: new Date().toISOString(),
+            })
+            .select()
+            .single(),
+          supabase
+            .from('positions')
+            .insert({
+              portfolio_id: data.portfolio_id,
+              user_id: user.id,
+              symbol: data.symbol,
+              side: data.side,
+              volume: data.volume,
+              entry_price: executedPrice,
+              current_price: executedPrice,
+              stop_loss: data.stop_loss,
+              take_profit: data.take_profit,
+              profit_loss: 0,
+            })
+            .select()
+            .single()
+        ]);
+
+        const { data: order, error: orderError } = orderResponse;
+        const { data: position, error: posError } = positionResponse;
 
         if (orderError) throw orderError;
-
-        // Create position
-        const { data: position, error: posError } = await supabase
-          .from('positions')
-          .insert({
-            portfolio_id: data.portfolio_id,
-            user_id: user.id,
-            symbol: data.symbol,
-            side: data.side,
-            volume: data.volume,
-            entry_price: executedPrice,
-            current_price: executedPrice,
-            stop_loss: data.stop_loss,
-            take_profit: data.take_profit,
-            profit_loss: 0,
-          })
-          .select()
-          .single();
-
         if (posError) throw posError;
 
-        // Update portfolio margin
+        // Calculate margin and update portfolio
         const marginRequired = executedPrice * data.volume * 0.01; // 1% margin
         const { error: updateError } = await supabase
           .from('portfolios')
           .update({
-            margin_used: Number(portfolio.margin_used) + marginRequired,
+            margin_used: Number(portfolio.margin_used || 0) + marginRequired,
             margin_available: Number(portfolio.margin_available) - marginRequired,
           })
           .eq('id', data.portfolio_id);
 
         if (updateError) throw updateError;
 
-        // Log execution
+        // OPTIMIZATION: Log execution without blocking response (fire and forget with error handling)
         if (bot_id) {
-          await supabase.from('bot_execution_logs').insert({
+          supabase.from('bot_execution_logs').insert({
             bot_id: bot_id,
             user_id: user.id,
             action: 'order_executed',
-            details: { order_id: order.id, position_id: position.id, symbol: data.symbol, side: data.side, volume: data.volume, price: executedPrice },
-          });
+            details: { 
+              order_id: order.id, 
+              position_id: position.id, 
+              symbol: data.symbol, 
+              side: data.side, 
+              volume: data.volume, 
+              price: executedPrice 
+            },
+          }).catch(err => console.error('Failed to log execution:', err));
         }
 
         result = { order, position, message: 'Order executed successfully' };

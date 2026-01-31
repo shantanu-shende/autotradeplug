@@ -83,52 +83,67 @@ serve(async (req) => {
       case 'scan': {
         const symbols = data?.symbols || ['EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD'];
         const minSpread = data?.min_spread_pips || 0.5;
-        const opportunities: unknown[] = [];
 
-        for (const symbol of symbols) {
-          const prices = getSimulatedPrices(symbol);
-          
-          // Compare all price source combinations
-          for (let i = 0; i < prices.length; i++) {
-            for (let j = i + 1; j < prices.length; j++) {
-              const spread = calculateSpreadPips(prices[i].price, prices[j].price, symbol);
-              
-              if (spread >= minSpread) {
-                const buySource = prices[i].price < prices[j].price ? prices[i] : prices[j];
-                const sellSource = prices[i].price < prices[j].price ? prices[j] : prices[i];
-                
-                const potentialProfit = (sellSource.price - buySource.price) * 100000; // Per standard lot
+        // OPTIMIZATION: Fetch all symbol prices in parallel
+        const allPricesBySymbol = await Promise.all(
+          symbols.map(async (symbol) => ({
+            symbol,
+            prices: getSimulatedPrices(symbol),
+          }))
+        );
 
-                // Store signal
-                const { data: signal, error } = await supabase
-                  .from('arbitrage_signals')
-                  .insert({
-                    user_id: user.id,
-                    symbol_pair: symbol,
-                    source_a: buySource.name,
-                    source_b: sellSource.name,
-                    price_a: buySource.price,
-                    price_b: sellSource.price,
-                    spread_pips: spread,
-                    potential_profit: potentialProfit,
-                    executed: false,
-                  })
-                  .select()
-                  .single();
+        // OPTIMIZATION: Process all symbol opportunities in parallel
+        const opportunitiesPerSymbol = await Promise.all(
+          allPricesBySymbol.map(async ({ symbol, prices }) => {
+            const symbolOpportunities: unknown[] = [];
 
-                if (!error) {
-                  opportunities.push({
-                    ...signal,
-                    action_recommendation: `Buy at ${buySource.name} (${buySource.price.toFixed(5)}), Sell at ${sellSource.name} (${sellSource.price.toFixed(5)})`,
-                  });
+            // Compare all price source combinations for this symbol
+            for (let i = 0; i < prices.length; i++) {
+              for (let j = i + 1; j < prices.length; j++) {
+                const spread = calculateSpreadPips(prices[i].price, prices[j].price, symbol);
+
+                if (spread >= minSpread) {
+                  const buySource = prices[i].price < prices[j].price ? prices[i] : prices[j];
+                  const sellSource = prices[i].price < prices[j].price ? prices[j] : prices[i];
+
+                  const potentialProfit = (sellSource.price - buySource.price) * 100000; // Per standard lot
+
+                  // Store signal
+                  const { data: signal, error } = await supabase
+                    .from('arbitrage_signals')
+                    .insert({
+                      user_id: user.id,
+                      symbol_pair: symbol,
+                      source_a: buySource.name,
+                      source_b: sellSource.name,
+                      price_a: buySource.price,
+                      price_b: sellSource.price,
+                      spread_pips: spread,
+                      potential_profit: potentialProfit,
+                      executed: false,
+                    })
+                    .select()
+                    .single();
+
+                  if (!error) {
+                    symbolOpportunities.push({
+                      ...signal,
+                      action_recommendation: `Buy at ${buySource.name} (${buySource.price.toFixed(5)}), Sell at ${sellSource.name} (${sellSource.price.toFixed(5)})`,
+                    });
+                  }
                 }
               }
             }
-          }
-        }
 
-        result = { 
-          opportunities, 
+            return symbolOpportunities;
+          })
+        );
+
+        // Flatten all opportunities
+        const opportunities = opportunitiesPerSymbol.flat();
+
+        result = {
+          opportunities,
           scanned_symbols: symbols.length,
           signals_found: opportunities.length,
           scan_timestamp: new Date().toISOString(),
@@ -150,19 +165,25 @@ serve(async (req) => {
 
       case 'get_spreads': {
         const symbols = data?.symbols || ['EURUSD', 'GBPUSD', 'USDJPY', 'XAUUSD'];
-        const spreads: Record<string, { sources: PriceSource[]; max_spread: number; min_spread: number }> = {};
 
-        for (const symbol of symbols) {
-          const prices = getSimulatedPrices(symbol);
-          const allPrices = prices.map(p => p.price);
-          
-          spreads[symbol] = {
-            sources: prices,
-            max_spread: calculateSpreadPips(Math.max(...allPrices), Math.min(...allPrices), symbol),
-            min_spread: 0,
-          };
-        }
+        // OPTIMIZATION: Fetch all spreads in parallel
+        const spreadEntries = await Promise.all(
+          symbols.map(async (symbol) => {
+            const prices = getSimulatedPrices(symbol);
+            const allPrices = prices.map(p => p.price);
 
+            return [
+              symbol,
+              {
+                sources: prices,
+                max_spread: calculateSpreadPips(Math.max(...allPrices), Math.min(...allPrices), symbol),
+                min_spread: 0,
+              },
+            ] as const;
+          })
+        );
+
+        const spreads = Object.fromEntries(spreadEntries);
         result = { spreads, timestamp: new Date().toISOString() };
         break;
       }

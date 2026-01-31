@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { BatchCollector } from '@/utils/concurrency';
 
 export interface ForexTick {
   pair: string;
@@ -47,6 +48,24 @@ export function LiveForexProvider({
   const instanceId = useRef(Math.random().toString(36).substr(2, 9));
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // OPTIMIZATION: Batch tick updates to reduce state updates
+  const batchCollectorRef = useRef<BatchCollector<ForexTick> | null>(null);
+
+  // Initialize batch collector
+  useEffect(() => {
+    if (!batchCollectorRef.current) {
+      batchCollectorRef.current = new BatchCollector(async (batch) => {
+        updateTicksBatch(batch);
+      }, 50); // Collect updates for 50ms before processing
+    }
+
+    return () => {
+      if (batchCollectorRef.current) {
+        batchCollectorRef.current.clear();
+      }
+    };
+  }, []);
+
   // Update ticks and broadcast to other tabs
   const updateTicks = useCallback((newTicks: ForexTick | ForexTick[]) => {
     const tickArray = Array.isArray(newTicks) ? newTicks : [newTicks];
@@ -72,6 +91,29 @@ export function LiveForexProvider({
           ticks: tickArray, 
           ts: Date.now() 
         }));
+      }
+    }
+  }, []);
+
+  // OPTIMIZATION: Batch update ticks (called by BatchCollector)
+  const updateTicksBatch = useCallback((batch: ForexTick[]) => {
+    setTicks(prev => {
+      const updated = new Map(prev);
+      batch.forEach(tick => {
+        updated.set(tick.pair, tick);
+      });
+      return updated;
+    });
+
+    setLastUpdate(new Date());
+
+    // Broadcast batched ticks to other tabs
+    if (broadcastRef.current) {
+      try {
+        broadcastRef.current.postMessage({ type: 'TICKS_BATCH', ticks: batch });
+      } catch (e) {
+        // Fallback
+        console.warn('Broadcast failed, using localStorage', e);
       }
     }
   }, []);
@@ -139,10 +181,19 @@ export function LiveForexProvider({
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.type === 'SNAPSHOT') {
-            updateTicks(data.payload);
-          } else if (data.type === 'TICK') {
-            updateTicks(data.payload);
+          
+          // OPTIMIZATION: Use batch collector for tick updates
+          if (data.type === 'SNAPSHOT' && data.payload) {
+            const payloads = Array.isArray(data.payload) ? data.payload : [data.payload];
+            payloads.forEach(payload => {
+              if (batchCollectorRef.current) {
+                batchCollectorRef.current.add(payload);
+              }
+            });
+          } else if (data.type === 'TICK' && data.payload) {
+            if (batchCollectorRef.current) {
+              batchCollectorRef.current.add(data.payload);
+            }
           }
         } catch (e) {
           console.error('Failed to parse forex message:', e);
@@ -153,6 +204,11 @@ export function LiveForexProvider({
         console.log('Forex WebSocket disconnected');
         setIsConnected(false);
         wsRef.current = null;
+        
+        // Flush batch before reconnecting
+        if (batchCollectorRef.current) {
+          batchCollectorRef.current.flush();
+        }
         
         // Reconnect after delay if still leader
         if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
