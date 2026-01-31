@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      arbitrage_signals: {
+        Row: {
+          detected_at: string
+          executed: boolean
+          execution_result: Json | null
+          id: string
+          potential_profit: number
+          price_a: number
+          price_b: number
+          source_a: string
+          source_b: string
+          spread_pips: number
+          symbol_pair: string
+          user_id: string
+        }
+        Insert: {
+          detected_at?: string
+          executed?: boolean
+          execution_result?: Json | null
+          id?: string
+          potential_profit: number
+          price_a: number
+          price_b: number
+          source_a: string
+          source_b: string
+          spread_pips: number
+          symbol_pair: string
+          user_id: string
+        }
+        Update: {
+          detected_at?: string
+          executed?: boolean
+          execution_result?: Json | null
+          id?: string
+          potential_profit?: number
+          price_a?: number
+          price_b?: number
+          source_a?: string
+          source_b?: string
+          spread_pips?: number
+          symbol_pair?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bot_execution_logs: {
+        Row: {
+          action: string
+          bot_id: string
+          created_at: string
+          details: Json
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          bot_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          bot_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_execution_logs_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "trading_bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brokers: {
         Row: {
           broker_name: string
@@ -88,6 +168,69 @@ export type Database = {
           },
         ]
       }
+      orders: {
+        Row: {
+          bot_id: string | null
+          created_at: string
+          filled_at: string | null
+          filled_price: number | null
+          id: string
+          order_type: Database["public"]["Enums"]["order_type"]
+          portfolio_id: string
+          price: number | null
+          side: Database["public"]["Enums"]["position_side"]
+          status: Database["public"]["Enums"]["order_status"]
+          symbol: string
+          user_id: string
+          volume: number
+        }
+        Insert: {
+          bot_id?: string | null
+          created_at?: string
+          filled_at?: string | null
+          filled_price?: number | null
+          id?: string
+          order_type?: Database["public"]["Enums"]["order_type"]
+          portfolio_id: string
+          price?: number | null
+          side: Database["public"]["Enums"]["position_side"]
+          status?: Database["public"]["Enums"]["order_status"]
+          symbol: string
+          user_id: string
+          volume: number
+        }
+        Update: {
+          bot_id?: string | null
+          created_at?: string
+          filled_at?: string | null
+          filled_price?: number | null
+          id?: string
+          order_type?: Database["public"]["Enums"]["order_type"]
+          portfolio_id?: string
+          price?: number | null
+          side?: Database["public"]["Enums"]["position_side"]
+          status?: Database["public"]["Enums"]["order_status"]
+          symbol?: string
+          user_id?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "trading_bots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       otp_verifications: {
         Row: {
           attempts: number | null
@@ -118,6 +261,115 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolios: {
+        Row: {
+          balance: number
+          broker_connection_id: string | null
+          created_at: string
+          currency: string
+          equity: number
+          id: string
+          margin_available: number
+          margin_used: number
+          portfolio_name: string
+          portfolio_type: Database["public"]["Enums"]["portfolio_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          broker_connection_id?: string | null
+          created_at?: string
+          currency?: string
+          equity?: number
+          id?: string
+          margin_available?: number
+          margin_used?: number
+          portfolio_name: string
+          portfolio_type?: Database["public"]["Enums"]["portfolio_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          broker_connection_id?: string | null
+          created_at?: string
+          currency?: string
+          equity?: number
+          id?: string
+          margin_available?: number
+          margin_used?: number
+          portfolio_name?: string
+          portfolio_type?: Database["public"]["Enums"]["portfolio_type"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolios_broker_connection_id_fkey"
+            columns: ["broker_connection_id"]
+            isOneToOne: false
+            referencedRelation: "brokers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      positions: {
+        Row: {
+          current_price: number
+          entry_price: number
+          id: string
+          opened_at: string
+          portfolio_id: string
+          profit_loss: number
+          side: Database["public"]["Enums"]["position_side"]
+          stop_loss: number | null
+          symbol: string
+          take_profit: number | null
+          updated_at: string
+          user_id: string
+          volume: number
+        }
+        Insert: {
+          current_price: number
+          entry_price: number
+          id?: string
+          opened_at?: string
+          portfolio_id: string
+          profit_loss?: number
+          side: Database["public"]["Enums"]["position_side"]
+          stop_loss?: number | null
+          symbol: string
+          take_profit?: number | null
+          updated_at?: string
+          user_id: string
+          volume: number
+        }
+        Update: {
+          current_price?: number
+          entry_price?: number
+          id?: string
+          opened_at?: string
+          portfolio_id?: string
+          profit_loss?: number
+          side?: Database["public"]["Enums"]["position_side"]
+          stop_loss?: number | null
+          symbol?: string
+          take_profit?: number | null
+          updated_at?: string
+          user_id?: string
+          volume?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "positions_portfolio_id_fkey"
+            columns: ["portfolio_id"]
+            isOneToOne: false
+            referencedRelation: "portfolios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -145,6 +397,39 @@ export type Database = {
           phone_number?: string
           pin_hash?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      trading_bots: {
+        Row: {
+          bot_name: string
+          config: Json
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["bot_status"]
+          strategy_type: Database["public"]["Enums"]["strategy_type"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bot_name: string
+          config?: Json
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["bot_status"]
+          strategy_type?: Database["public"]["Enums"]["strategy_type"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bot_name?: string
+          config?: Json
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["bot_status"]
+          strategy_type?: Database["public"]["Enums"]["strategy_type"]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -204,7 +489,17 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      bot_status: "running" | "paused" | "stopped" | "error"
+      order_status:
+        | "pending"
+        | "filled"
+        | "partially_filled"
+        | "cancelled"
+        | "rejected"
+      order_type: "market" | "limit" | "stop" | "stop_limit"
+      portfolio_type: "real" | "demo"
+      position_side: "buy" | "sell"
+      strategy_type: "arbitrage" | "scalping" | "grid" | "trend_following"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -331,6 +626,19 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      bot_status: ["running", "paused", "stopped", "error"],
+      order_status: [
+        "pending",
+        "filled",
+        "partially_filled",
+        "cancelled",
+        "rejected",
+      ],
+      order_type: ["market", "limit", "stop", "stop_limit"],
+      portfolio_type: ["real", "demo"],
+      position_side: ["buy", "sell"],
+      strategy_type: ["arbitrage", "scalping", "grid", "trend_following"],
+    },
   },
 } as const

@@ -10,6 +10,7 @@ import BrokerDashboard from './BrokerDashboard';
 import StrategyManager from '@/components/strategy/StrategyManager';
 import BacktestCards from '@/components/backtest/BacktestCards';
 import NotificationOverlay from '@/components/notifications/NotificationOverlay';
+import TradingBotDashboard from '@/components/trading-bot/TradingBotDashboard';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -100,6 +101,8 @@ const Dashboard = ({ onLogout, defaultTab }: DashboardProps) => {
           return <Marketplace />;
       case 'backtest':
         return <BacktestCards />;
+      case 'trading-bots':
+        return <TradingBotDashboard />;
       case 'brokers':
         return <BrokerDashboard />;
       case 'settings':
