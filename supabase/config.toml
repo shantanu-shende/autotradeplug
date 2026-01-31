@@ -2,3 +2,12 @@ project_id = "gpbxdfrkpdzbalcxtovg"
 
 [functions.live-forex]
 verify_jwt = false
+
+[functions.portfolio-manager]
+verify_jwt = false
+
+[functions.trading-bot-engine]
+verify_jwt = false
+
+[functions.arbitrage-detector]
+verify_jwt = false
