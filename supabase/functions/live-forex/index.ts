@@ -233,10 +233,44 @@ serve(async (req) => {
 
   const upgradeHeader = req.headers.get("upgrade") || "";
   if (upgradeHeader.toLowerCase() === "websocket") {
+    // For WebSocket, check token from query parameter (browsers can't send headers on WS)
+    const wsToken = url.searchParams.get('token');
+    let wsUser = user;
+    
+    if (!wsUser && wsToken) {
+      // Verify the token from query param
+      const wsSupabase = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        {
+          global: {
+            headers: { Authorization: `Bearer ${wsToken}` },
+          },
+        }
+      );
+      const { data: { user: tokenUser }, error: tokenError } = await wsSupabase.auth.getUser();
+      if (tokenError || !tokenUser) {
+        console.error('WebSocket authentication failed');
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      wsUser = tokenUser;
+    }
+    
+    if (!wsUser) {
+      console.error('WebSocket authentication required');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { socket, response } = Deno.upgradeWebSocket(req);
     
     socket.onopen = () => {
-      console.log(`Forex WebSocket client connected (user: ${user.id})`);
+      console.log(`Forex WebSocket client connected (user: ${wsUser!.id})`);
       const ticks = Array.from(latestTicks.values());
       socket.send(JSON.stringify({ type: 'SNAPSHOT', payload: ticks }));
       
@@ -250,7 +284,7 @@ serve(async (req) => {
       }, 2000);
       
       socket.onclose = () => {
-        console.log(`Forex WebSocket client disconnected (user: ${user.id})`);
+        console.log(`Forex WebSocket client disconnected (user: ${wsUser!.id})`);
         clearInterval(interval);
       };
     };
