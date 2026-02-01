@@ -353,7 +353,9 @@ serve(async (req) => {
               volume: data.volume, 
               price: executedPrice 
             },
-          }).catch(err => console.error('Failed to log execution:', err));
+          }).then(({ error }) => {
+            if (error) console.error('Failed to log execution:', error);
+          });
         }
 
         result = { order, position, message: 'Order executed successfully' };

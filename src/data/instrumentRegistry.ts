@@ -102,6 +102,28 @@ const forexInstruments: Instrument[] = [
     supported: true,
     decimals: 4,
     category: 'Cross'
+  },
+  {
+    internal_symbol: 'EURJPY',
+    display_name: 'EUR/JPY',
+    asset_class: 'forex',
+    tradingview_symbol: 'OANDA:EURJPY',
+    fallback_symbol: 'FX:EURJPY',
+    price_source: 'twelvedata',
+    supported: true,
+    decimals: 2,
+    category: 'Cross'
+  },
+  {
+    internal_symbol: 'GBPJPY',
+    display_name: 'GBP/JPY',
+    asset_class: 'forex',
+    tradingview_symbol: 'OANDA:GBPJPY',
+    fallback_symbol: 'FX:GBPJPY',
+    price_source: 'twelvedata',
+    supported: true,
+    decimals: 2,
+    category: 'Cross'
   }
 ];
 
@@ -153,7 +175,7 @@ const commodityInstruments: Instrument[] = [
   }
 ];
 
-// Indices
+// Global Indices (no Indian indices)
 const indexInstruments: Instrument[] = [
   {
     internal_symbol: 'SPX',
@@ -200,44 +222,15 @@ const indexInstruments: Instrument[] = [
     category: 'European Indices'
   },
   {
-    internal_symbol: 'NIFTY',
-    display_name: 'Nifty 50',
+    internal_symbol: 'FTSE',
+    display_name: 'FTSE 100',
     asset_class: 'index',
-    tradingview_symbol: 'NSE:NIFTY',
+    tradingview_symbol: 'TVC:UKX',
+    fallback_symbol: 'FTSE:UKX',
     price_source: 'tradingview',
     supported: true,
     decimals: 2,
-    category: 'Indian Indices'
-  },
-  {
-    internal_symbol: 'BANKNIFTY',
-    display_name: 'Bank Nifty',
-    asset_class: 'index',
-    tradingview_symbol: 'NSE:BANKNIFTY',
-    price_source: 'tradingview',
-    supported: true,
-    decimals: 2,
-    category: 'Indian Indices'
-  },
-  {
-    internal_symbol: 'SENSEX',
-    display_name: 'Sensex',
-    asset_class: 'index',
-    tradingview_symbol: 'BSE:SENSEX',
-    price_source: 'tradingview',
-    supported: true,
-    decimals: 2,
-    category: 'Indian Indices'
-  },
-  {
-    internal_symbol: 'INDIAVIX',
-    display_name: 'India VIX',
-    asset_class: 'index',
-    tradingview_symbol: 'NSE:INDIAVIX',
-    price_source: 'tradingview',
-    supported: true,
-    decimals: 2,
-    category: 'Indian Indices'
+    category: 'European Indices'
   }
 ];
 
@@ -296,7 +289,7 @@ export function getIndexInstruments(): Instrument[] {
 export function parseSymbol(symbol: string): Instrument | undefined {
   // Remove common prefixes
   const cleanSymbol = symbol
-    .replace(/^(FX:|OANDA:|TVC:|NSE:|BSE:|XETR:)/, '')
+    .replace(/^(FX:|OANDA:|TVC:|XETR:|FTSE:|SP:|DJ:|NASDAQ:)/, '')
     .replace('/', '');
   
   return getInstrumentByInternalSymbol(cleanSymbol);

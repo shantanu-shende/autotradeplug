@@ -110,7 +110,7 @@ export class BatchCollector<T> {
   }
 
   size(): number {
-    return this.batch.size || this.batch.length;
+    return this.batch.length;
   }
 }
 

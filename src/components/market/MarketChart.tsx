@@ -55,7 +55,7 @@ export default function MarketChart({
 
     try {
       new window.TradingView.widget({
-        symbol: symbol || "NSE:NIFTY",
+        symbol: symbol || "OANDA:EURUSD",
         interval,
         container_id: containerId,
         autosize: true,
