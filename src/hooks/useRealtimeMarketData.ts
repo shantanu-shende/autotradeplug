@@ -88,8 +88,8 @@ export function useRealtimeMarketData(refreshInterval: number = 2000) {
   return data;
 }
 
-// Separate hook for just option chain data
-export function useRealtimeOptionChain(instrument: 'NIFTY' | 'BANKNIFTY' = 'NIFTY') {
+// Separate hook for just option chain data (forex-focused)
+export function useRealtimeOptionChain(_instrument: 'EURUSD' | 'GBPUSD' = 'EURUSD') {
   const [data, setData] = useState(() => ({
     optionChain: getSimulatedOptionChain(),
     expiries: getSimulatedExpiries(),
@@ -123,7 +123,7 @@ export function useRealtimeOptionChain(instrument: 'NIFTY' | 'BANKNIFTY' = 'NIFT
     }, 3000);
 
     return () => clearInterval(intervalId);
-  }, [instrument]);
+  }, []);
 
   return data;
 }

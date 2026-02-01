@@ -1,4 +1,5 @@
 // Simulated market data service for demo/fallback when API is unavailable
+// Focused on Forex, Commodities, and Global Indices
 
 export interface SimulatedIndexData {
   symbol: string;
@@ -27,49 +28,53 @@ export interface SimulatedOptionData {
   put_volume: number;
 }
 
-// Base data that gets updated with realistic price movements
+// Base data - Forex Majors as primary indices
 const baseIndices: SimulatedIndexData[] = [
-  { symbol: 'NIFTY 50', ltp: 24850.75, change: 157.80, changePercent: 0.64, volume: '2.5Cr', prevClose: 24692.95 },
-  { symbol: 'BANK NIFTY', ltp: 53250.30, change: 234.15, changePercent: 0.44, volume: '1.8Cr', prevClose: 53016.15 },
-  { symbol: 'SENSEX', ltp: 81892.60, change: 489.40, changePercent: 0.60, volume: '98L', prevClose: 81403.20 },
+  { symbol: 'EUR/USD', ltp: 1.0875, change: 0.0023, changePercent: 0.21, volume: '2.5B', prevClose: 1.0852 },
+  { symbol: 'GBP/USD', ltp: 1.2645, change: 0.0034, changePercent: 0.27, volume: '1.8B', prevClose: 1.2611 },
+  { symbol: 'USD/JPY', ltp: 149.85, change: -0.45, changePercent: -0.30, volume: '1.2B', prevClose: 150.30 },
 ];
 
+// Top Gainers - Forex pairs and commodities
 const baseGainers: SimulatedStockData[] = [
-  { symbol: 'ADANIPORTS', ltp: 1285.50, change: 78.20, changePercent: 6.48, volume: '2.5Cr' },
-  { symbol: 'BAJFINANCE', ltp: 7834.75, change: 312.45, changePercent: 4.15, volume: '1.2Cr' },
-  { symbol: 'HDFCBANK', ltp: 1747.30, change: 67.85, changePercent: 4.04, volume: '3.1Cr' },
-  { symbol: 'RELIANCE', ltp: 2985.50, change: 89.30, changePercent: 3.08, volume: '5.2Cr' },
-  { symbol: 'TCS', ltp: 4256.75, change: 98.45, changePercent: 2.37, volume: '4.8Cr' },
+  { symbol: 'XAU/USD', ltp: 2045.50, change: 28.20, changePercent: 1.40, volume: '850M' },
+  { symbol: 'AUD/USD', ltp: 0.6578, change: 0.0065, changePercent: 1.00, volume: '420M' },
+  { symbol: 'NZD/USD', ltp: 0.6125, change: 0.0045, changePercent: 0.74, volume: '180M' },
+  { symbol: 'EUR/GBP', ltp: 0.8605, change: 0.0038, changePercent: 0.44, volume: '320M' },
+  { symbol: 'XAG/USD', ltp: 24.85, change: 0.42, changePercent: 1.72, volume: '125M' },
 ];
 
+// Top Losers - Forex pairs
 const baseLosers: SimulatedStockData[] = [
-  { symbol: 'DRREDDY', ltp: 1234.20, change: -56.30, changePercent: -4.36, volume: '85L' },
-  { symbol: 'CIPLA', ltp: 1456.75, change: -58.25, changePercent: -3.85, volume: '67L' },
-  { symbol: 'SUNPHARMA', ltp: 1789.40, change: -62.60, changePercent: -3.38, volume: '92L' },
-  { symbol: 'DIVISLAB', ltp: 4567.80, change: -134.20, changePercent: -2.85, volume: '45L' },
-  { symbol: 'APOLLOHOSP', ltp: 6234.50, change: -156.30, changePercent: -2.44, volume: '32L' },
+  { symbol: 'USD/CHF', ltp: 0.8745, change: -0.0052, changePercent: -0.59, volume: '280M' },
+  { symbol: 'USD/CAD', ltp: 1.3565, change: -0.0068, changePercent: -0.50, volume: '310M' },
+  { symbol: 'EUR/JPY', ltp: 162.85, change: -0.75, changePercent: -0.46, volume: '195M' },
+  { symbol: 'GBP/JPY', ltp: 189.45, change: -0.82, changePercent: -0.43, volume: '165M' },
+  { symbol: 'WTI Oil', ltp: 78.25, change: -1.15, changePercent: -1.45, volume: '425M' },
 ];
 
+// Most Active - Major pairs by volume
 const baseMostActive: SimulatedStockData[] = [
-  { symbol: 'RELIANCE', ltp: 2985.50, change: 89.30, changePercent: 3.08, volume: '8.2Cr' },
-  { symbol: 'TCS', ltp: 4256.75, change: 98.45, changePercent: 2.37, volume: '6.8Cr' },
-  { symbol: 'INFY', ltp: 1867.80, change: 25.60, changePercent: 1.39, volume: '5.1Cr' },
-  { symbol: 'HDFC', ltp: 1747.30, change: 67.85, changePercent: 4.04, volume: '4.9Cr' },
-  { symbol: 'ICICIBANK', ltp: 1289.45, change: 18.35, changePercent: 1.44, volume: '4.5Cr' },
+  { symbol: 'EUR/USD', ltp: 1.0875, change: 0.0023, changePercent: 0.21, volume: '2.5B' },
+  { symbol: 'GBP/USD', ltp: 1.2645, change: 0.0034, changePercent: 0.27, volume: '1.8B' },
+  { symbol: 'USD/JPY', ltp: 149.85, change: -0.45, changePercent: -0.30, volume: '1.2B' },
+  { symbol: 'XAU/USD', ltp: 2045.50, change: 28.20, changePercent: 1.40, volume: '850M' },
+  { symbol: 'AUD/USD', ltp: 0.6578, change: 0.0065, changePercent: 1.00, volume: '420M' },
 ];
 
+// Base option chain - simulated forex options
 const baseOptionChain: SimulatedOptionData[] = [
-  { strike: 24700, call_oi: 1850000, put_oi: 890000, call_ltp: 185.50, put_ltp: 35.20, call_volume: 125000, put_volume: 89000 },
-  { strike: 24750, call_oi: 2180000, put_oi: 1200000, call_ltp: 152.80, put_ltp: 52.40, call_volume: 156000, put_volume: 112000 },
-  { strike: 24800, call_oi: 2850000, put_oi: 1650000, call_ltp: 118.20, put_ltp: 78.90, call_volume: 189000, put_volume: 145000 },
-  { strike: 24850, call_oi: 3200000, put_oi: 2100000, call_ltp: 88.50, put_ltp: 98.30, call_volume: 245000, put_volume: 198000 },
-  { strike: 24900, call_oi: 2950000, put_oi: 2450000, call_ltp: 62.30, put_ltp: 125.60, call_volume: 178000, put_volume: 212000 },
-  { strike: 24950, call_oi: 2400000, put_oi: 2800000, call_ltp: 42.10, put_ltp: 158.90, call_volume: 134000, put_volume: 245000 },
-  { strike: 25000, call_oi: 1950000, put_oi: 3200000, call_ltp: 28.40, put_ltp: 195.20, call_volume: 98000, put_volume: 289000 },
+  { strike: 1.0800, call_oi: 1850000, put_oi: 890000, call_ltp: 0.0085, put_ltp: 0.0012, call_volume: 125000, put_volume: 89000 },
+  { strike: 1.0850, call_oi: 2180000, put_oi: 1200000, call_ltp: 0.0052, put_ltp: 0.0028, call_volume: 156000, put_volume: 112000 },
+  { strike: 1.0875, call_oi: 2850000, put_oi: 1650000, call_ltp: 0.0035, put_ltp: 0.0038, call_volume: 189000, put_volume: 145000 },
+  { strike: 1.0900, call_oi: 3200000, put_oi: 2100000, call_ltp: 0.0022, put_ltp: 0.0055, call_volume: 245000, put_volume: 198000 },
+  { strike: 1.0950, call_oi: 2950000, put_oi: 2450000, call_ltp: 0.0012, put_ltp: 0.0085, call_volume: 178000, put_volume: 212000 },
+  { strike: 1.1000, call_oi: 2400000, put_oi: 2800000, call_ltp: 0.0006, put_ltp: 0.0128, call_volume: 134000, put_volume: 245000 },
+  { strike: 1.1050, call_oi: 1950000, put_oi: 3200000, call_ltp: 0.0003, put_ltp: 0.0175, call_volume: 98000, put_volume: 289000 },
 ];
 
-// Generate realistic price movement
-function getRandomPriceChange(basePrice: number, volatility: number = 0.001): number {
+// Generate realistic price movement for forex
+function getRandomPriceChange(basePrice: number, volatility: number = 0.0002): number {
   const direction = Math.random() > 0.5 ? 1 : -1;
   const magnitude = Math.random() * volatility * basePrice;
   return direction * magnitude;
@@ -78,18 +83,21 @@ function getRandomPriceChange(basePrice: number, volatility: number = 0.001): nu
 // Deep clone and apply price movements
 function applyPriceMovement<T extends { ltp: number; change: number; changePercent: number }>(
   item: T,
-  volatility: number = 0.001
+  volatility: number = 0.0002
 ): T {
   const priceChange = getRandomPriceChange(item.ltp, volatility);
-  const newLtp = Math.max(item.ltp + priceChange, 1);
+  const newLtp = Math.max(item.ltp + priceChange, 0.0001);
   const prevClose = item.ltp - item.change;
   const newChange = newLtp - prevClose;
   const newChangePercent = (newChange / prevClose) * 100;
   
+  // Determine decimal places based on price magnitude
+  const decimals = newLtp < 10 ? 4 : 2;
+  
   return {
     ...item,
-    ltp: Number(newLtp.toFixed(2)),
-    change: Number(newChange.toFixed(2)),
+    ltp: Number(newLtp.toFixed(decimals)),
+    change: Number(newChange.toFixed(decimals)),
     changePercent: Number(newChangePercent.toFixed(2)),
   };
 }
@@ -103,22 +111,22 @@ let currentOptionChain = [...baseOptionChain];
 
 // Update all data with realistic movements
 export function tickMarketData(): void {
-  currentIndices = currentIndices.map(idx => applyPriceMovement(idx, 0.0005));
-  currentGainers = currentGainers.map(stock => applyPriceMovement(stock, 0.002));
-  currentLosers = currentLosers.map(stock => applyPriceMovement(stock, 0.002));
-  currentMostActive = currentMostActive.map(stock => applyPriceMovement(stock, 0.0015));
+  currentIndices = currentIndices.map(idx => applyPriceMovement(idx, 0.0001));
+  currentGainers = currentGainers.map(stock => applyPriceMovement(stock, 0.0003));
+  currentLosers = currentLosers.map(stock => applyPriceMovement(stock, 0.0003));
+  currentMostActive = currentMostActive.map(stock => applyPriceMovement(stock, 0.0002));
   
   // Update option chain with OI and LTP changes
   currentOptionChain = currentOptionChain.map(option => {
     const oiChange = Math.floor((Math.random() - 0.5) * 50000);
-    const ltpChange = (Math.random() - 0.5) * 2;
+    const ltpChange = (Math.random() - 0.5) * 0.0002;
     
     return {
       ...option,
       call_oi: Math.max(option.call_oi + oiChange, 100000),
       put_oi: Math.max(option.put_oi + Math.floor((Math.random() - 0.5) * 50000), 100000),
-      call_ltp: Math.max(option.call_ltp + ltpChange, 0.1),
-      put_ltp: Math.max(option.put_ltp + (Math.random() - 0.5) * 2, 0.1),
+      call_ltp: Math.max(option.call_ltp + ltpChange, 0.0001),
+      put_ltp: Math.max(option.put_ltp + (Math.random() - 0.5) * 0.0002, 0.0001),
     };
   });
 }
@@ -152,10 +160,10 @@ export function getSimulatedExpiries(): string[] {
   const today = new Date();
   const expiries: string[] = [];
   
-  // Generate next 4 weekly expiries (Thursdays)
+  // Generate next 4 weekly expiries (Fridays for forex)
   for (let i = 0; i < 4; i++) {
     const expiry = new Date(today);
-    expiry.setDate(today.getDate() + ((4 - today.getDay() + 7) % 7) + (i * 7));
+    expiry.setDate(today.getDate() + ((5 - today.getDay() + 7) % 7) + (i * 7));
     expiries.push(expiry.toISOString().split('T')[0]);
   }
   
@@ -184,7 +192,7 @@ export function getSimulatedMaxPain(): number {
 }
 
 export function getSimulatedVIX(): { value: number; change: number } {
-  const baseVix = 13.45;
+  const baseVix = 15.45;
   const change = (Math.random() - 0.5) * 0.5;
   return {
     value: Number((baseVix + change).toFixed(2)),
