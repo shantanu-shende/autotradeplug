@@ -101,7 +101,7 @@ export function BotCard({ bot, onRefresh }: BotCardProps) {
 
   return (
     <>
-      <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-colors">
+      <Card className="bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300">
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">

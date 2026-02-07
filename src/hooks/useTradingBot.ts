@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { debounce } from '@/utils/concurrency';
+import { useRealtimeTradingData } from './useRealtimeTradingData';
 
 export interface TradingBot {
   id: string;
@@ -42,6 +43,28 @@ export function useTradingBot() {
 
   // OPTIMIZATION: Track pending updates to avoid duplicate refetches
   const pendingUpdatesRef = useRef<Set<string>>(new Set());
+
+  // Real-time subscriptions
+  const { isConnected: isRealtimeConnected } = useRealtimeTradingData({
+    onBotChange: useCallback((payload) => {
+      const eventType = payload.eventType;
+      if (eventType === 'INSERT') {
+        const newBot = payload.new as unknown as TradingBot;
+        setBots(prev => {
+          if (prev.some(b => b.id === newBot.id)) return prev;
+          return [...prev, newBot];
+        });
+      } else if (eventType === 'UPDATE') {
+        const updated = payload.new as unknown as TradingBot;
+        setBots(prev => prev.map(b => b.id === updated.id ? { ...b, ...updated } : b));
+        setCurrentBot(prev => prev?.id === updated.id ? { ...prev, ...updated } : prev);
+      } else if (eventType === 'DELETE') {
+        const deleted = payload.old as { id: string };
+        setBots(prev => prev.filter(b => b.id !== deleted.id));
+        setCurrentBot(prev => prev?.id === deleted.id ? null : prev);
+      }
+    }, []),
+  });
 
   const callBotAPI = useCallback(async (action: string, data?: Record<string, unknown>) => {
     if (!session?.access_token) {
@@ -320,6 +343,7 @@ export function useTradingBot() {
     logs,
     loading,
     error,
+    isRealtimeConnected,
     fetchBots,
     fetchBotDetails,
     createBot,

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRealtimeTradingData } from './useRealtimeTradingData';
 
 export interface Portfolio {
   id: string;
@@ -57,6 +58,51 @@ export function usePortfolio() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Real-time subscriptions
+  const { isConnected: isRealtimeConnected } = useRealtimeTradingData({
+    onPortfolioChange: useCallback((payload) => {
+      const eventType = payload.eventType;
+      if (eventType === 'INSERT') {
+        const newP = payload.new as unknown as Portfolio;
+        setPortfolios(prev => prev.some(p => p.id === newP.id) ? prev : [...prev, newP]);
+      } else if (eventType === 'UPDATE') {
+        const updated = payload.new as unknown as Portfolio;
+        setPortfolios(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p));
+        setCurrentPortfolio(prev => prev?.id === updated.id ? { ...prev, ...updated } : prev);
+      } else if (eventType === 'DELETE') {
+        const deleted = payload.old as { id: string };
+        setPortfolios(prev => prev.filter(p => p.id !== deleted.id));
+        setCurrentPortfolio(prev => prev?.id === deleted.id ? null : prev);
+      }
+    }, []),
+    onPositionChange: useCallback((payload) => {
+      const eventType = payload.eventType;
+      if (eventType === 'INSERT') {
+        const newPos = payload.new as unknown as Position;
+        setPositions(prev => prev.some(p => p.id === newPos.id) ? prev : [...prev, newPos]);
+      } else if (eventType === 'UPDATE') {
+        const updated = payload.new as unknown as Position;
+        setPositions(prev => prev.map(p => p.id === updated.id ? { ...p, ...updated } : p));
+      } else if (eventType === 'DELETE') {
+        const deleted = payload.old as { id: string };
+        setPositions(prev => prev.filter(p => p.id !== deleted.id));
+      }
+    }, []),
+    onOrderChange: useCallback((payload) => {
+      const eventType = payload.eventType;
+      if (eventType === 'INSERT') {
+        const newOrder = payload.new as unknown as Order;
+        setOrders(prev => prev.some(o => o.id === newOrder.id) ? prev : [...prev, newOrder]);
+      } else if (eventType === 'UPDATE') {
+        const updated = payload.new as unknown as Order;
+        setOrders(prev => prev.map(o => o.id === updated.id ? { ...o, ...updated } : o));
+      } else if (eventType === 'DELETE') {
+        const deleted = payload.old as { id: string };
+        setOrders(prev => prev.filter(o => o.id !== deleted.id));
+      }
+    }, []),
+  });
 
   const callPortfolioAPI = useCallback(async (action: string, data?: Record<string, unknown>) => {
     if (!session?.access_token) {
@@ -206,6 +252,7 @@ export function usePortfolio() {
     orders,
     loading,
     error,
+    isRealtimeConnected,
     fetchPortfolios,
     fetchPortfolioDetails,
     createPortfolio,
