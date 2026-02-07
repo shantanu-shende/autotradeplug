@@ -1,128 +1,111 @@
 
 
-# Fix Build Errors and Transition to Forex-Only Focus
+# Real-Time WebSocket Updates for Bot Status and Positions
 
 ## Overview
 
-This plan addresses three main areas:
-1. Fix the TypeScript build errors preventing the app from running
-2. Navigate and test the Trading Bots dashboard functionality
-3. Remove all Indian stock market references and focus purely on forex trading
+Add live, automatic updates to the Trading Bots dashboard so that bot status changes, portfolio updates, and position changes appear instantly without needing to click "Refresh". This uses the database's built-in real-time subscription system (already enabled on the relevant tables).
 
----
+## What Changes for Users
 
-## Part 1: Fix Build Errors
+- Bot cards will automatically update when their status changes (running/paused/stopped)
+- Portfolio balances, equity, and margin will update live
+- Position P&L will stream in real-time
+- A connection status indicator will show whether live updates are active
+- No more manual refresh needed -- everything stays in sync
 
-### Error 1: PostgrestFilterBuilder `.catch()` not available
-**File:** `supabase/functions/trading-bot-engine/index.ts` (line 356)
-**Problem:** The Supabase Postgrest builder doesn't have `.catch()` method - it returns a query builder, not a Promise.
-**Solution:** Use async/await pattern with try-catch, or use `.then()` to handle the promise properly.
+## Technical Approach
 
-```typescript
-// BEFORE (broken)
-supabase.from('bot_execution_logs').insert({...}).catch(err => console.error(...));
+Instead of building a separate WebSocket backend function, we use the database's built-in real-time change feed. The `trading_bots`, `portfolios`, `positions`, and `orders` tables already have real-time enabled from the initial migration.
 
-// AFTER (fixed) - Fire and forget with proper promise handling
-supabase.from('bot_execution_logs').insert({...}).then(
-  ({ error }) => { if (error) console.error('Failed to log execution:', error); }
-);
+## Implementation Details
+
+### 1. Create a new hook: `src/hooks/useRealtimeTradingData.ts`
+
+A centralized hook that subscribes to real-time changes on all HFT tables, scoped to the authenticated user:
+
+- **Channel subscriptions** for `trading_bots`, `portfolios`, `positions`, and `orders` tables
+- Listens for `INSERT`, `UPDATE`, and `DELETE` events
+- Provides callback-based API so consumers can react to changes
+- Handles connection status tracking (connected/disconnected)
+- Auto-cleanup on unmount
+
+```text
+Hook API:
+  useRealtimeTradingData({
+    onBotChange: (payload) => void,
+    onPortfolioChange: (payload) => void,
+    onPositionChange: (payload) => void,
+    onOrderChange: (payload) => void,
+  }) => { isConnected: boolean }
 ```
 
-### Error 2: Implicit `any` type
-**File:** Same location
-**Solution:** Properly type the error handling or use the fixed pattern above.
+### 2. Update `src/hooks/useTradingBot.ts`
 
-### Error 3: `size` property on array
-**File:** `src/utils/concurrency.ts` (line 113)
-**Problem:** Arrays don't have a `.size` property - that's for Set/Map.
-**Solution:** Use `.length` consistently for arrays.
+- Import and use `useRealtimeTradingData`
+- On `INSERT` events: add new bot to local state
+- On `UPDATE` events: merge updated fields into matching bot
+- On `DELETE` events: remove bot from local state
+- Expose `isRealtimeConnected` status
 
-```typescript
-// BEFORE (broken)
-return this.batch.size || this.batch.length;
+### 3. Update `src/hooks/usePortfolio.ts`
 
-// AFTER (fixed)
-return this.batch.length;
-```
+- Same pattern: subscribe to portfolio, position, and order changes
+- Automatically update local state when DB rows change
+- Portfolio balance/equity changes reflect instantly
 
----
+### 4. Update `src/components/trading-bot/TradingBotDashboard.tsx`
 
-## Part 2: Test Trading Bots Dashboard
+- Show a real-time connection indicator (green dot = live, red = disconnected)
+- Remove the need for manual refresh when realtime is connected
+- Stats cards (Active Bots, Total Equity, etc.) update automatically
 
-After fixing the build errors, we can navigate to `/trading-bots` and test:
-- Creating a demo portfolio
-- Creating a trading bot
-- Verifying the bot/portfolio dashboard displays correctly
+### 5. Update `src/components/trading-bot/BotCard.tsx`
 
----
+- Accept bot data as prop (already does) -- updates flow from parent
+- Add subtle animation when status changes (e.g., flash border)
 
-## Part 3: Remove Indian Stock Market References
+### 6. Update `src/components/portfolio/PortfolioManager.tsx`
 
-### Files to Modify
+- Portfolio cards update in real-time
+- Position P&L updates stream live
+
+## Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/hooks/useRealtimeTradingData.ts` | Central realtime subscription hook |
+
+## Files to Modify
 
 | File | Changes |
 |------|---------|
-| `src/data/instrumentRegistry.ts` | Remove NIFTY, BANKNIFTY, SENSEX, INDIAVIX entries |
-| `src/services/simulatedMarketData.ts` | Replace Indian stocks with forex pairs |
-| `src/pages/Market.tsx` | Update to forex-focused display |
-| `src/hooks/useRealtimeMarketData.ts` | Remove NIFTY/BANKNIFTY references |
-| `src/components/market/LiveOptionChain.tsx` | Remove (forex-focused) |
-| `src/components/market/LiveOptionChainSimulated.tsx` | Remove or repurpose |
-| `src/components/market/MarketChart.tsx` | Default to forex symbol |
+| `src/hooks/useTradingBot.ts` | Add realtime listener, auto-update state |
+| `src/hooks/usePortfolio.ts` | Add realtime listener, auto-update state |
+| `src/components/trading-bot/TradingBotDashboard.tsx` | Add connection indicator, pass realtime status |
+| `src/components/trading-bot/BotCard.tsx` | Add transition animation on status change |
+| `src/components/portfolio/PortfolioManager.tsx` | Wire in realtime portfolio updates |
 
-### Files to Delete
-| File | Reason |
-|------|--------|
-| `src/services/dhanAPI.ts` | Dhan is for Indian markets |
-| `src/services/dhanMarketData.ts` | Dhan is for Indian markets |
-| `src/hooks/useDhanMarketData.ts` | No longer needed |
-| `src/hooks/useDhanOptionChain.ts` | No longer needed |
-| `supabase/functions/dhan-optionchain/index.ts` | Remove Dhan edge function |
+## Realtime Subscription Pattern
 
-### Key Changes in Detail
+```text
+supabase
+  .channel('trading-realtime')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'trading_bots' }, handler)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'portfolios' }, handler)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'positions' }, handler)
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, handler)
+  .subscribe()
+```
 
-**1. Update Instrument Registry (instrumentRegistry.ts)**
-- Keep forex instruments: EURUSD, GBPUSD, USDJPY, etc.
-- Keep commodities: Gold (XAUUSD), Silver (XAGUSD), Oil
-- Keep global indices: SPX, NASDAQ, DJI, DAX
-- Remove: NIFTY, BANKNIFTY, SENSEX, INDIAVIX
+RLS policies already filter data to the authenticated user, so each user only receives changes to their own records.
 
-**2. Update Simulated Market Data (simulatedMarketData.ts)**
-- Replace Indian indices (NIFTY, BANKNIFTY, SENSEX) with forex majors
-- Replace Indian stocks with forex crosses
-- Update simulated option chain to forex-style or remove entirely
+## No Database or Edge Function Changes Required
 
-**3. Update Market Page (Market.tsx)**
-- Display forex pairs as primary instruments
-- Change currency symbols from ₹ to $ or appropriate currency
-- Remove F&O (Futures & Options) Indian-specific metrics
-- Remove Indian sector data
+The migration that created these tables already included:
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE trading_bots, portfolios, positions, orders;
+```
 
-**4. Update MarketChart default symbol**
-- Change from `NSE:NIFTY` to `OANDA:EURUSD`
-
----
-
-## Technical Summary
-
-| Category | Changes |
-|----------|---------|
-| **Build Fixes** | 2 files, 3 errors fixed |
-| **Files Modified** | ~8 files for forex focus |
-| **Files Deleted** | 5 files (Dhan-related) |
-| **Edge Functions** | Delete `dhan-optionchain` |
-| **Config Updates** | Remove Dhan function from config.toml |
-
----
-
-## Implementation Order
-
-1. Fix the 3 build errors (immediate priority)
-2. Deploy and verify app loads
-3. Test Trading Bots dashboard at `/trading-bots`
-4. Remove Dhan-related files and services
-5. Update instrument registry (remove Indian indices)
-6. Update simulated market data for forex
-7. Update Market page UI for forex focus
-8. Test the complete forex-focused flow
+So no additional backend work is needed.
 
