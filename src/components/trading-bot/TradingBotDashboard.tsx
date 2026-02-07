@@ -14,8 +14,8 @@ import { Bot, Wallet, TrendingUp, Activity, Plus, RefreshCw, Zap } from 'lucide-
 import { toast } from 'sonner';
 
 export function TradingBotDashboard() {
-  const { bots, loading, error, fetchBots } = useTradingBot();
-  const { portfolios, fetchPortfolios } = usePortfolio();
+  const { bots, loading, error, fetchBots, isRealtimeConnected } = useTradingBot();
+  const { portfolios, fetchPortfolios, isRealtimeConnected: isPortfolioRealtimeConnected } = usePortfolio();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState('bots');
 
@@ -119,7 +119,12 @@ export function TradingBotDashboard() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* Realtime connection indicator */}
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground mr-2">
+              <div className={`h-2 w-2 rounded-full ${isRealtimeConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+              {isRealtimeConnected ? 'Live' : 'Offline'}
+            </div>
             <Button variant="outline" size="sm" onClick={handleRefresh}>
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
