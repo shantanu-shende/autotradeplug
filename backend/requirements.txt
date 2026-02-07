@@ -1,0 +1,13 @@
+fastapi>=0.95.0
+uvicorn[standard]>=0.20.0
+SQLAlchemy>=1.4.0
+asyncpg>=0.27.0
+alembic>=1.10.0
+pydantic>=1.10.0
+python-jose>=3.3.0
+passlib[bcrypt]>=1.7.0
+psycopg2-binary>=2.9.0
+
+# Optional broker libs (add per-deployment)
+ccxt>=3.0.0
+# ib_insync
