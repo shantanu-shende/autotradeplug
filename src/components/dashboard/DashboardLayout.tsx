@@ -55,16 +55,16 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
         animate={{
           x: isSidebarOpen || window.innerWidth >= 1024 ? 0 : -280
         }}
-        className="fixed left-0 top-0 z-40 h-screen w-70 glass-panel border-r lg:translate-x-0"
+        className="fixed left-0 top-0 z-40 h-screen w-56 glass-panel border-r lg:translate-x-0"
       >
         <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-white" />
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <div className="flex items-center space-x-2">
+              <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-gradient">AutoTradePlug</span>
+              <span className="text-sm font-bold text-gradient">AutoTradePlug</span>
             </div>
             <Button
               variant="ghost"
@@ -77,64 +77,48 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
           </div>
 
           {/* User Info */}
-          <div className="p-6 border-b">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-sm font-medium text-primary">TR</span>
+          <div className="px-4 py-2.5 border-b">
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-xs font-medium text-primary">TR</span>
               </div>
               <div>
-                <p className="text-sm font-medium">Trader User</p>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary" className="text-xs">
-                    Pro Plan
+                <p className="text-xs font-medium">Trader User</p>
+                <div className="flex items-center space-x-1.5">
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    Pro
                   </Badge>
-                  <div className="w-2 h-2 bg-green-500 rounded-full pulse-glow"></div>
+                  <div className="w-1.5 h-1.5 bg-green-500 rounded-full pulse-glow"></div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Market Overview - Moved from dashboard center */}
-          <div className="p-4 border-b">
-            <h4 className="text-sm font-medium mb-3">Market Overview</h4>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <div className="text-muted-foreground">NIFTY 50</div>
-                  <div className="flex items-center space-x-1">
-                    <span className="font-medium">19,674.25</span>
-                    <span className="text-success text-[10px]">+0.8%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">SENSEX</div>
-                  <div className="flex items-center space-x-1">
-                    <span className="font-medium">66,795.14</span>
-                    <span className="text-success text-[10px]">+1.2%</span>
-                  </div>
-                </div>
+          <div className="px-3 py-2 border-b">
+            <h4 className="text-[11px] font-medium mb-1.5 text-muted-foreground uppercase tracking-wider">Market</h4>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px]">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">NIFTY</span>
+                <span className="text-success">+0.8%</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <div className="text-muted-foreground">VIX</div>
-                  <div className="flex items-center space-x-1">
-                    <span className="font-medium">13.45</span>
-                    <span className="text-destructive text-[10px]">-2.1%</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-muted-foreground">PCR</div>
-                  <div className="flex items-center space-x-1">
-                    <span className="font-medium">0.89</span>
-                    <span className="text-warning text-[10px]">-0.3%</span>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">SENSEX</span>
+                <span className="text-success">+1.2%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">VIX</span>
+                <span className="text-destructive">-2.1%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">PCR</span>
+                <span className="text-warning">-0.3%</span>
               </div>
             </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 px-3 py-2 space-y-0.5">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;
@@ -146,7 +130,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                     onPageChange(item.id);
                     setIsSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-2.5 px-2.5 py-1.5 rounded-md text-left transition-colors text-xs ${
                     isActive 
                       ? 'bg-primary text-white' 
                       : 'hover:bg-muted text-muted-foreground hover:text-foreground'
@@ -154,21 +138,22 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <Icon className="w-4 h-4" />
+                  <span className="font-medium">{item.label}</span>
                 </motion.button>
               );
             })}
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t">
+          <div className="px-3 py-2 border-t">
             <Button
               variant="ghost"
+              size="sm"
               onClick={onLogout}
-              className="w-full justify-start text-muted-foreground hover:text-destructive"
+              className="w-full justify-start text-muted-foreground hover:text-destructive text-xs h-8"
             >
-              <LogOut className="w-4 h-4 mr-3" />
+              <LogOut className="w-3.5 h-3.5 mr-2" />
               Sign Out
             </Button>
           </div>
@@ -176,7 +161,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
       </motion.aside>
 
       {/* Main Content */}
-      <div className="lg:ml-70">
+      <div className="lg:ml-56">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 border-b glass-panel">
           <div className="flex items-center justify-between px-6 py-4">
