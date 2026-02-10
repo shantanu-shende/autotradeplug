@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { EmptyState } from '@/components/ui/empty-state';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -399,7 +400,7 @@ const StrategyManager: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Search Bar and Filters from Marketplace */}
-      <Card className="glass-panel">
+      <Card className="bg-card/40 border-border/30">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
@@ -447,7 +448,7 @@ const StrategyManager: React.FC = () => {
 
       {/* Strategy Cards Grid from Marketplace */}
       <div>
-        <h2 className="text-2xl font-bold text-gradient mb-4">Strategy Marketplace</h2>
+        <h2 className="text-xl font-semibold tracking-tight mb-1">Strategy Marketplace</h2>
         {marketplaceLoading ? (
           <div className="flex items-center justify-center min-h-96">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -473,13 +474,15 @@ const StrategyManager: React.FC = () => {
         )}
 
         {filteredMarketplaceStrategies.length === 0 && !marketplaceLoading && (
-          <Card className="glass-panel">
-            <CardContent className="p-12 text-center">
-              <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No strategies found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your search criteria or create a new strategy.
-              </p>
+          <Card className="bg-card/40 border-border/30">
+            <CardContent className="p-0">
+              <EmptyState
+                icon={Target}
+                title="No strategies match your search"
+                description="Try adjusting your filters or search terms. You can also create a custom strategy from scratch."
+                actionLabel="Clear Filters"
+                onAction={() => { setSearchTerm(''); setSelectedCategory('all'); }}
+              />
             </CardContent>
           </Card>
         )}
@@ -490,8 +493,8 @@ const StrategyManager: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gradient">My Strategies</h2>
-          <p className="text-muted-foreground">Create, manage and deploy your trading strategies</p>
+          <h2 className="text-xl font-semibold tracking-tight">My Strategies</h2>
+          <p className="text-sm text-muted-foreground">Create, manage and deploy your trading strategies</p>
         </div>
         
         <div className="flex items-center space-x-3">
@@ -546,17 +549,15 @@ const StrategyManager: React.FC = () => {
           ))}
         </div>
       ) : strategies.length === 0 ? (
-        <Card className="text-center py-12">
-          <CardContent>
-            <Code className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No Strategies Yet</h3>
-            <p className="text-muted-foreground mb-4">
-              Create your first trading strategy to get started
-            </p>
-            <Button onClick={() => setShowCreateModal(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Create First Strategy
-            </Button>
+        <Card className="bg-card/40 border-border/30">
+          <CardContent className="p-0">
+            <EmptyState
+              icon={Code}
+              title="No strategies created yet"
+              description="Build your first custom strategy or choose one from the marketplace above. Strategies let you automate trading with your own rules."
+              actionLabel="Create First Strategy"
+              onAction={() => setShowCreateModal(true)}
+            />
           </CardContent>
         </Card>
       ) : (

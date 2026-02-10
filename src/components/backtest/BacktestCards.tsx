@@ -206,11 +206,14 @@ const BacktestCards = () => {
 
   return (
     <>
-      <div className="space-y-6 p-4 md:p-6">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">Recent Backtests</h2>
-          <Button className="bg-primary hover:bg-primary/90">
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight">Recent Backtests</h2>
+            <p className="text-sm text-muted-foreground">Review historical strategy performance</p>
+          </div>
+          <Button size="sm" className="h-9 px-4">
             <BarChart3 className="w-4 h-4 mr-2" />
             New Backtest
           </Button>
@@ -230,12 +233,12 @@ const BacktestCards = () => {
                 transition={{ delay: i * 0.1, duration: 0.4 }}
                 className="h-full"
               >
-                <Card className="relative overflow-hidden bg-card/50 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-all duration-300 h-full flex flex-col">
+                <Card className="relative overflow-hidden bg-card/40 border-border/30 hover:border-border/50 transition-colors duration-200 h-full flex flex-col">
                   <CardContent className="p-5 flex flex-col h-full">
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-foreground mb-1">
+                        <h3 className="text-base font-semibold mb-0.5">
                           {backtest.strategy}
                         </h3>
                         <div className="flex items-center text-sm text-muted-foreground">

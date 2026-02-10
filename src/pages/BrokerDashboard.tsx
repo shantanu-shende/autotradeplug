@@ -268,18 +268,20 @@ const BrokerDashboard: React.FC = () => {
       />
 
       {/* Help Section */}
-      <Card className="glass-panel border-dashed border-primary/30">
-        <CardContent className="p-6">
+      <Card className="bg-card/40 border-border/30 border-dashed">
+        <CardContent className="p-5">
           <div className="flex items-center space-x-4">
-            <HelpCircle className="h-8 w-8 text-primary" />
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <HelpCircle className="w-5 h-5 text-primary" />
+            </div>
             <div className="flex-1">
-              <h3 className="font-semibold">Why connect a broker?</h3>
-              <p className="text-sm text-muted-foreground">
+              <h3 className="text-sm font-semibold">Why connect a broker?</h3>
+              <p className="text-xs text-muted-foreground">
                 Connect your broker account to execute live trades, access real-time data, and deploy strategies automatically.
               </p>
             </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Shield className="h-4 w-4" />
+            <div className="flex items-center space-x-1.5 text-xs text-muted-foreground">
+              <Shield className="w-3.5 h-3.5" />
               <span>Bank-level security</span>
             </div>
           </div>
@@ -295,10 +297,10 @@ const BrokerDashboard: React.FC = () => {
       ) : (
         <>
           {connectedCount > 0 && (
-            <div className="p-4 bg-success/10 border border-success/20 rounded-lg mb-6">
+            <div className="px-4 py-3 bg-[hsl(var(--success))]/5 border border-[hsl(var(--success))]/15 rounded-xl">
               <div className="flex items-center space-x-2">
-                <Wifi className="h-5 w-5 text-success" />
-                <span className="text-success font-medium">
+                <Wifi className="w-4 h-4 text-[hsl(var(--success))]" />
+                <span className="text-sm text-[hsl(var(--success))] font-medium">
                   {connectedCount} broker{connectedCount > 1 ? 's' : ''} connected and ready for trading
                 </span>
               </div>
