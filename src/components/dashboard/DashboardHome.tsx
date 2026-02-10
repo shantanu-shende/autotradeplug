@@ -205,7 +205,7 @@ const DashboardHome = () => {
             {/* Compound P&L Summary */}
             <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-4 border-t border-border/30 bg-muted/10">
               <span />
-              <span className="text-sm text-muted-foreground font-medium">Compound running P&L Summary</span>
+              <span className="text-sm text-muted-foreground font-medium">Live Automation P&L (Running Only)</span>
               <span />
               <span className="text-lg font-bold text-[hsl(var(--success))]">{compoundPnl}</span>
               <span />
@@ -286,9 +286,11 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
           <Badge className="text-[10px] h-5 bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-0 font-normal">
             {strategy.status}
           </Badge>
-          <Badge className="text-[10px] h-5 bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-0 font-normal">
-            {strategy.status}
-          </Badge>
+          {strategy.details?.riskMode && (
+            <Badge variant="outline" className="text-[10px] h-5 border-border/40 font-normal">
+              {strategy.details.riskMode}
+            </Badge>
+          )}
         </div>
 
         {/* Trades */}
