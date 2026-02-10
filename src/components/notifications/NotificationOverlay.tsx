@@ -75,10 +75,10 @@ const NotificationOverlay: React.FC<NotificationOverlayProps> = ({
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed right-0 top-0 h-full w-full max-w-md z-50"
           >
-            <Card className="h-full rounded-none glass-panel border-l">
-              <div className="flex items-center justify-between p-4 border-b">
+            <Card className="h-full rounded-none bg-card/60 backdrop-blur-xl border-l border-border/30">
+              <div className="flex items-center justify-between px-5 py-4 border-b border-border/30">
                 <div className="flex items-center space-x-2">
-                  <h3 className="text-lg font-semibold">Notifications</h3>
+                  <h3 className="text-base font-semibold">Notifications</h3>
                   {unreadCount > 0 && (
                     <Badge variant="destructive" className="text-xs">
                       {unreadCount} new
@@ -100,10 +100,14 @@ const NotificationOverlay: React.FC<NotificationOverlayProps> = ({
               <ScrollArea className="flex-1 h-[calc(100vh-80px)]">
                 <div className="p-4 space-y-3">
                   {notifications.length === 0 ? (
-                    <div className="text-center py-12">
-                      <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <h4 className="text-lg font-medium mb-2">All caught up!</h4>
-                      <p className="text-muted-foreground">No new notifications</p>
+                    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                      <div className="w-14 h-14 rounded-2xl bg-muted/40 flex items-center justify-center mb-5">
+                        <CheckCircle className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <h4 className="text-base font-semibold mb-1.5">All caught up!</h4>
+                      <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+                        You have no new notifications. We'll alert you when your strategies need attention.
+                      </p>
                     </div>
                   ) : (
                     notifications.map((notification, index) => (
@@ -113,7 +117,7 @@ const NotificationOverlay: React.FC<NotificationOverlayProps> = ({
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                         onClick={() => onNotificationClick(notification)}
-                        className={`p-4 rounded-lg border cursor-pointer transition-all hover:bg-muted/50 ${
+                        className={`p-4 rounded-xl border cursor-pointer transition-colors duration-150 hover:bg-muted/30 ${
                           notification.status === 'unread' 
                             ? 'bg-primary/5 border-primary/20' 
                             : 'bg-background border-border'

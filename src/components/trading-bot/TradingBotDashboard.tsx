@@ -12,6 +12,7 @@ import { PortfolioManager } from '@/components/portfolio/PortfolioManager';
 import { ArbitrageDashboard } from '@/components/arbitrage/ArbitrageDashboard';
 import { Bot, Wallet, TrendingUp, Activity, Plus, RefreshCw, Zap } from 'lucide-react';
 import { toast } from 'sonner';
+import { EmptyState } from '@/components/ui/empty-state';
 
 export function TradingBotDashboard() {
   const { bots, loading, error, fetchBots, isRealtimeConnected } = useTradingBot();
@@ -40,61 +41,61 @@ export function TradingBotDashboard() {
     <div className="space-y-6">
       {/* Header Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
+        <Card className="bg-card/40 border-border/30">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Active Bots</p>
-                <p className="text-2xl font-bold text-primary">{runningBots.length}</p>
-                <p className="text-xs text-muted-foreground">{totalBots} total</p>
+                <p className="text-xs text-muted-foreground mb-1">Active Bots</p>
+                <p className="text-2xl font-bold tracking-tight">{runningBots.length}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{totalBots} total</p>
               </div>
-              <div className="p-3 bg-primary/10 rounded-full">
-                <Bot className="h-6 w-6 text-primary" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Bot className="w-5 h-5 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
+        <Card className="bg-card/40 border-border/30">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Equity</p>
-                <p className="text-2xl font-bold">${totalEquity.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">{portfolios.length} portfolios</p>
+                <p className="text-xs text-muted-foreground mb-1">Total Equity</p>
+                <p className="text-2xl font-bold tracking-tight">${totalEquity.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{portfolios.length} portfolios</p>
               </div>
-              <div className="p-3 bg-green-500/10 rounded-full">
-                <Wallet className="h-6 w-6 text-green-500" />
+              <div className="w-10 h-10 rounded-xl bg-[hsl(var(--success))]/10 flex items-center justify-center">
+                <Wallet className="w-5 h-5 text-[hsl(var(--success))]" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
+        <Card className="bg-card/40 border-border/30">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Demo Portfolios</p>
-                <p className="text-2xl font-bold text-blue-500">{demoPortfolios.length}</p>
-                <p className="text-xs text-muted-foreground">For testing</p>
+                <p className="text-xs text-muted-foreground mb-1">Demo Portfolios</p>
+                <p className="text-2xl font-bold tracking-tight">{demoPortfolios.length}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">For testing</p>
               </div>
-              <div className="p-3 bg-blue-500/10 rounded-full">
-                <TrendingUp className="h-6 w-6 text-blue-500" />
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-primary" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 border-border/50">
-          <CardContent className="p-4">
+        <Card className="bg-card/40 border-border/30">
+          <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Real Portfolios</p>
-                <p className="text-2xl font-bold text-amber-500">{realPortfolios.length}</p>
-                <p className="text-xs text-muted-foreground">Connected to brokers</p>
+                <p className="text-xs text-muted-foreground mb-1">Real Portfolios</p>
+                <p className="text-2xl font-bold tracking-tight">{realPortfolios.length}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Connected to brokers</p>
               </div>
-              <div className="p-3 bg-amber-500/10 rounded-full">
-                <Activity className="h-6 w-6 text-amber-500" />
+              <div className="w-10 h-10 rounded-xl bg-[hsl(var(--warning))]/10 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-[hsl(var(--warning))]" />
               </div>
             </div>
           </CardContent>
@@ -153,17 +154,15 @@ export function TradingBotDashboard() {
               </CardContent>
             </Card>
           ) : bots.length === 0 ? (
-            <Card className="bg-muted/30 border-dashed">
-              <CardContent className="p-12 text-center">
-                <Bot className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Trading Bots Yet</h3>
-                <p className="text-muted-foreground mb-4">
-                  Create your first bot to start automated trading
-                </p>
-                <Button onClick={() => setShowCreateModal(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Your First Bot
-                </Button>
+            <Card className="bg-card/40 border-border/30">
+              <CardContent className="p-0">
+                <EmptyState
+                  icon={Bot}
+                  title="No trading bots yet"
+                  description="Create your first bot to start automating your trading strategies. You can configure risk levels, instruments, and execution rules."
+                  actionLabel="Create Your First Bot"
+                  onAction={() => setShowCreateModal(true)}
+                />
               </CardContent>
             </Card>
           ) : (

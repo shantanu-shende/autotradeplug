@@ -113,9 +113,9 @@ const DashboardHome = () => {
             >
               <Card className="bg-card/40 border-border/30 hover:border-border/50 transition-colors duration-200">
                 <CardContent className="p-5">
-                  <div className="text-2xl font-bold tracking-tight mb-1">{stat.value}</div>
+                  <div className="text-2xl font-bold tracking-tight mb-1.5">{stat.value}</div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{stat.title}</span>
+                    <span className="text-xs text-muted-foreground">{stat.title}</span>
                     {stat.change && (
                       <span className={`text-xs ${stat.trend === 'up' ? 'text-[hsl(var(--success))]' : 'text-destructive'}`}>
                         {stat.change}
@@ -180,12 +180,12 @@ const DashboardHome = () => {
           </CardHeader>
           <CardContent className="p-0">
             {/* Table Header */}
-            <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-2.5 text-xs font-medium text-muted-foreground border-b border-border/20">
+            <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-2.5 text-[11px] uppercase tracking-wider font-medium text-muted-foreground/70 border-b border-border/20">
               <span>#</span>
               <span>Strategy</span>
               <span>Trades</span>
-              <span>Compound P&L</span>
-              <span>Last update</span>
+              <span>P&L</span>
+              <span>Updated</span>
               <span />
             </div>
 
@@ -203,11 +203,11 @@ const DashboardHome = () => {
             })}
 
             {/* Compound P&L Summary */}
-            <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-4 border-t border-border/30 bg-muted/10">
+            <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-4 border-t border-border/20 bg-muted/5">
               <span />
-              <span className="text-sm text-muted-foreground font-medium">Live Automation P&L (Running Only)</span>
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Live Automation P&L (Running Only)</span>
               <span />
-              <span className="text-lg font-bold text-[hsl(var(--success))]">{compoundPnl}</span>
+              <span className="text-lg font-bold tracking-tight text-[hsl(var(--success))]">{compoundPnl}</span>
               <span />
               <span />
             </div>
