@@ -11,6 +11,9 @@ import StrategyManager from '@/components/strategy/StrategyManager';
 import BacktestCards from '@/components/backtest/BacktestCards';
 import NotificationOverlay from '@/components/notifications/NotificationOverlay';
 import TradingBotDashboard from '@/components/trading-bot/TradingBotDashboard';
+import SettingsPage from '@/components/dashboard/SettingsPage';
+import ProfilePage from '@/components/dashboard/ProfilePage';
+import SupportPage from '@/components/dashboard/SupportPage';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -106,12 +109,11 @@ const Dashboard = ({ onLogout, defaultTab }: DashboardProps) => {
       case 'brokers':
         return <BrokerDashboard />;
       case 'settings':
-        return (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gradient mb-4">Settings</h2>
-            <p className="text-muted-foreground">Coming soon...</p>
-          </div>
-        );
+        return <SettingsPage />;
+      case 'profile':
+        return <ProfilePage />;
+      case 'support':
+        return <SupportPage />;
       default:
         return <DashboardHome />;
     }

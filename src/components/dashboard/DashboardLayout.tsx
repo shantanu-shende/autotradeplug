@@ -3,26 +3,31 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { 
   LayoutDashboard, 
   Bot, 
   TrendingUp, 
-  Settings, 
   Bell, 
   Menu,
   X,
   LogOut,
-  Shield,
   Wifi,
   User,
-  ChevronUp
+  Settings,
+  HelpCircle,
+  ShieldAlert,
+  ChevronUp,
+  Activity,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -38,9 +43,8 @@ const sidebarItems = [
   { id: 'market', label: 'Market', icon: TrendingUp },
   { id: 'strategies', label: 'Strategies', icon: Bot },
   { id: 'brokers', label: 'Brokers', icon: Wifi },
-  { id: 'backtest', label: 'Backtest', icon: TrendingUp },
-  { id: 'marketplace', label: 'Marketplace', icon: Shield },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'backtest', label: 'Backtest', icon: Activity },
+  { id: 'support', label: 'Support', icon: HelpCircle },
 ];
 
 const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: DashboardLayoutProps) => {
@@ -49,6 +53,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
 
   const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const userInitials = userName.slice(0, 2).toUpperCase();
+  const userEmail = user?.email || '';
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -74,7 +79,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
           className="fixed left-0 top-0 z-40 h-screen w-[72px] bg-card/60 backdrop-blur-xl border-r border-border/30 lg:translate-x-0 flex flex-col items-center"
         >
           {/* Logo */}
-          <div className="py-5 w-full flex justify-center">
+          <div className="py-6 w-full flex justify-center">
             <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
               <TrendingUp className="w-5 h-5 text-primary-foreground" />
             </div>
@@ -91,7 +96,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
           </Button>
 
           {/* Navigation Icons */}
-          <nav className="flex-1 flex flex-col items-center gap-2 py-6">
+          <nav className="flex-1 flex flex-col items-center gap-1.5 py-4">
             {sidebarItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentPage === item.id;
@@ -122,7 +127,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
           </nav>
 
           {/* Profile Section at Bottom */}
-          <div className="pb-5 flex flex-col items-center gap-3">
+          <div className="pb-6 flex flex-col items-center gap-3">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex flex-col items-center gap-1.5 group cursor-pointer">
@@ -134,13 +139,40 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                   <ChevronUp className="w-3 h-3 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end" sideOffset={12} className="w-48 bg-popover border-border/50">
-                <div className="px-3 py-2">
-                  <p className="text-sm font-medium truncate">{userName}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              <DropdownMenuContent side="right" align="end" sideOffset={12} className="w-64 bg-popover border-border/50">
+                {/* Profile Header */}
+                <div className="px-3 py-3 flex items-center gap-3">
+                  <Avatar className="w-10 h-10 border-2 border-primary/30">
+                    <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
+                      {userInitials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{userName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
+                  </div>
+                  <CheckCircle2 className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
                 </div>
+
+                {/* Automation Status */}
+                <div className="px-3 py-2 mx-2 mb-1 rounded-lg bg-muted/30 border border-border/20">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Automation</span>
+                    <Badge className="text-[10px] h-4 bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-0">Active</Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-xs mt-1.5">
+                    <span className="text-muted-foreground">Risk Level</span>
+                    <span className="text-foreground font-medium">Moderate</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs mt-1.5">
+                    <span className="text-muted-foreground">Last Exec</span>
+                    <span className="text-muted-foreground">2 min ago</span>
+                  </div>
+                </div>
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onPageChange('settings')}>
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70 px-3">Account</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => onPageChange('profile')}>
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
@@ -148,10 +180,22 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                   <Settings className="h-4 w-4 mr-2" />
                   Settings
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onPageChange('support')}>
+                  <HelpCircle className="h-4 w-4 mr-2" />
+                  Support
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-amber-500 focus:text-amber-500">
+                  <ShieldAlert className="h-4 w-4 mr-2" />
+                  Emergency Stop
+                  <span className="ml-auto text-[10px] text-muted-foreground">all bots</span>
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
