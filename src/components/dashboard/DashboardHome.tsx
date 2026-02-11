@@ -111,7 +111,7 @@ const DashboardHome = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.08 }}
             >
-              <Card className="bg-card/40 border-border/30 hover:border-border/50 transition-colors duration-200">
+              <Card className="bg-card/40 border-border/30 hover:border-border/50 card-lift">
                 <CardContent className="p-5">
                   <div className="text-2xl font-bold tracking-tight mb-1.5">{stat.value}</div>
                   <div className="flex items-center justify-between">
@@ -180,13 +180,17 @@ const DashboardHome = () => {
           </CardHeader>
           <CardContent className="p-0">
             {/* Table Header */}
-            <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-2.5 text-[11px] uppercase tracking-wider font-medium text-muted-foreground/70 border-b border-border/20">
+            <div className="hidden lg:grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-2.5 text-[11px] uppercase tracking-wider font-medium text-muted-foreground/70 border-b border-border/20">
               <span>#</span>
               <span>Strategy</span>
               <span>Trades</span>
               <span>P&L</span>
               <span>Updated</span>
               <span />
+            </div>
+            {/* Mobile header */}
+            <div className="lg:hidden px-4 py-2.5 text-[11px] uppercase tracking-wider font-medium text-muted-foreground/70 border-b border-border/20">
+              Active Strategies
             </div>
 
             {/* Strategy Rows */}
@@ -203,13 +207,18 @@ const DashboardHome = () => {
             })}
 
             {/* Compound P&L Summary */}
-            <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-4 border-t border-border/20 bg-muted/5">
+            <div className="hidden lg:grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-4 border-t border-border/20 bg-muted/5">
               <span />
               <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Live Automation P&L (Running Only)</span>
               <span />
               <span className="text-lg font-bold tracking-tight text-[hsl(var(--success))]">{compoundPnl}</span>
               <span />
               <span />
+            </div>
+            {/* Mobile P&L summary */}
+            <div className="lg:hidden flex items-center justify-between px-4 py-4 border-t border-border/20 bg-muted/5">
+              <span className="text-xs uppercase tracking-wider text-muted-foreground font-medium">Live P&L</span>
+              <span className="text-lg font-bold tracking-tight text-[hsl(var(--success))]">{compoundPnl}</span>
             </div>
           </CardContent>
         </Card>
@@ -237,17 +246,18 @@ const DashboardHome = () => {
             {recentAlerts.map((alert, index) => (
               <div
                 key={index}
-                className="flex items-start space-x-3 p-3 rounded-lg bg-muted/20 hover:bg-muted/30 transition-colors duration-150"
+                className="flex items-start space-x-3 p-3 rounded-xl bg-muted/20 row-hover"
               >
                 <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                  alert.type === 'trade' ? 'bg-[hsl(var(--success))]' : 'bg-destructive'
+                  alert.type === 'trade' ? 'bg-[hsl(var(--success))]' : 
+                  alert.type === 'error' ? 'bg-[hsl(var(--warning))]' : 'bg-primary'
                 }`} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm">{alert.message}</p>
                   <p className="text-xs text-muted-foreground">{alert.time}</p>
                 </div>
                 {alert.type === 'error' && (
-                  <AlertTriangle className="w-4 h-4 text-destructive flex-shrink-0" />
+                  <AlertTriangle className="w-4 h-4 text-[hsl(var(--warning))] flex-shrink-0" />
                 )}
               </div>
             ))}
@@ -275,7 +285,7 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-3.5 hover:bg-muted/15 transition-colors duration-150 border-b border-border/10 last:border-b-0">
+      <div className="grid grid-cols-[40px_1fr_140px_160px_120px_40px] items-center px-6 py-3.5 row-hover border-b border-border/10 last:border-b-0 hidden lg:grid">
         {/* # */}
         <span className="text-sm font-medium text-muted-foreground">{index}</span>
 
@@ -312,7 +322,7 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
         {/* 3-dot menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="h-7 w-7 rounded-md flex items-center justify-center hover:bg-muted/40 transition-colors">
+            <button className="h-7 w-7 rounded-md flex items-center justify-center hover:bg-muted/40 press-scale">
               <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
             </button>
           </DropdownMenuTrigger>
@@ -327,18 +337,18 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
               <TrendingUp className="h-4 w-4 mr-2 text-[hsl(var(--success))]" /> Close Profitable Positions
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <TrendDown className="h-4 w-4 mr-2 text-destructive" /> Close Losing Positions
+              <TrendDown className="h-4 w-4 mr-2 text-destructive/70" /> Close Losing Positions
             </DropdownMenuItem>
             <DropdownMenuItem>
               <Activity className="h-4 w-4 mr-2" /> Reduce Exposure 50%
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-destructive/70">Destructive</DropdownMenuLabel>
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
+            <DropdownMenuLabel className="text-xs text-destructive/60">Destructive</DropdownMenuLabel>
+            <DropdownMenuItem className="text-destructive/80 focus:text-destructive/80">
               <DollarSign className="h-4 w-4 mr-2" /> Close All Positions
               <span className="ml-auto text-[10px] text-muted-foreground">confirm</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive focus:text-destructive">
+            <DropdownMenuItem className="text-destructive/80 focus:text-destructive/80">
               <Square className="h-4 w-4 mr-2" /> Stop Strategy
               <span className="ml-auto text-[10px] text-muted-foreground">confirm</span>
             </DropdownMenuItem>
@@ -346,8 +356,49 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
         </DropdownMenu>
       </div>
 
-      {/* Hover Analysis Panel */}
-      <ActiveStrategyHoverPanel isVisible={isHovered} details={strategy.details} />
+      {/* Mobile strategy row */}
+      <div className="lg:hidden flex items-center justify-between px-4 py-3.5 row-hover border-b border-border/10 last:border-b-0">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <span className="text-xs text-muted-foreground w-5 flex-shrink-0">{index}</span>
+          <Icon className="h-4 w-4 text-primary flex-shrink-0" />
+          <div className="min-w-0">
+            <span className="font-medium text-sm truncate block">{strategy.name}</span>
+            <div className="flex items-center gap-2 mt-0.5">
+              <span className={`text-xs font-semibold ${
+                strategy.pnl.startsWith('+') ? 'text-[hsl(var(--success))]' : 'text-destructive'
+              }`}>{strategy.pnl}</span>
+              <span className="text-[10px] text-muted-foreground">{strategy.trades} trades</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Badge className="text-[10px] h-5 bg-[hsl(var(--success))]/15 text-[hsl(var(--success))] border-0 font-normal">
+            {strategy.status}
+          </Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="h-7 w-7 rounded-md flex items-center justify-center hover:bg-muted/40 press-scale">
+                <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52 bg-popover border-border/50">
+              <DropdownMenuLabel className="text-xs text-muted-foreground">Actions</DropdownMenuLabel>
+              <DropdownMenuItem><Eye className="h-4 w-4 mr-2" /> View Details</DropdownMenuItem>
+              <DropdownMenuItem><Pause className="h-4 w-4 mr-2" /> Pause</DropdownMenuItem>
+              <DropdownMenuItem><Play className="h-4 w-4 mr-2" /> Restart</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive/80 focus:text-destructive/80">
+                <Square className="h-4 w-4 mr-2" /> Stop Strategy
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      {/* Hover Analysis Panel - desktop only */}
+      <div className="hidden lg:block">
+        <ActiveStrategyHoverPanel isVisible={isHovered} details={strategy.details} />
+      </div>
     </div>
   );
 };

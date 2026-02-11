@@ -57,18 +57,18 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col lg:flex-row">
         {/* Mobile Menu Button */}
-        <div className="lg:hidden fixed top-4 left-4 z-50">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsSidebarOpen(true)}
-            className="bg-card/80 backdrop-blur-sm border-border/50"
-          >
-            <Menu className="h-4 w-4" />
-          </Button>
-        </div>
+          <div className="lg:hidden fixed top-3 left-3 z-50">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsSidebarOpen(true)}
+              className="bg-card/80 backdrop-blur-sm border-border/50 press-scale h-10 w-10 p-0"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          </div>
 
         {/* Icon-only Sidebar Rail */}
         <motion.aside
@@ -229,7 +229,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
           </header>
 
           {/* Page Content */}
-          <main className="p-6">
+          <main className="p-4 sm:p-6">
             {children}
           </main>
         </div>
