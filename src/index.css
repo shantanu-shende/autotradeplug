@@ -123,28 +123,35 @@
   .trading-card {
     @apply bg-card border border-border rounded-xl p-6 
            shadow-[var(--shadow-card)] 
-           transition-[var(--transition-smooth)]
            hover:shadow-[var(--shadow-trading)]
            hover:border-primary/20;
+    transition: box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   
   .strategy-card {
-    @apply trading-card
-           hover:scale-[1.02] 
-           hover:bg-gradient-to-br 
-           hover:from-card 
-           hover:to-card/80
-           cursor-pointer;
+    @apply trading-card cursor-pointer;
+  }
+  .strategy-card:hover {
+    transform: translateY(-2px);
   }
   
   .glow-button {
     @apply bg-gradient-to-r from-primary to-primary/80
            text-primary-foreground
            px-8 py-4 rounded-xl font-semibold
-           shadow-[var(--shadow-glow)]
-           transition-[var(--transition-bounce)]
-           hover:scale-105 hover:shadow-[var(--shadow-trading)]
-           active:scale-95;
+           shadow-[var(--shadow-glow)];
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .glow-button:hover {
+    transform: scale(1.03);
+    box-shadow: var(--shadow-trading);
+  }
+  .glow-button:active {
+    transform: scale(0.97);
   }
   
   .glass-panel {
@@ -190,7 +197,8 @@
   .story-link::after {
     content: '';
     @apply absolute w-full scale-x-0 h-0.5 bottom-0 left-0 bg-primary 
-           origin-bottom-right transition-transform duration-300;
+           origin-bottom-right;
+    transition: transform 250ms cubic-bezier(0.22, 1, 0.36, 1);
   }
   
   .story-link:hover::after {
@@ -199,7 +207,52 @@
   
   /* Hover Scale Animation */
   .hover-scale {
-    @apply transition-transform duration-200 hover:scale-105;
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .hover-scale:hover {
+    transform: scale(1.03);
+  }
+
+  /* Micro-interaction: Row hover */
+  .row-hover {
+    transition: background-color 150ms cubic-bezier(0.22, 1, 0.36, 1),
+                transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .row-hover:hover {
+    background-color: hsl(var(--muted) / 0.15);
+  }
+
+  /* Micro-interaction: Button press */
+  .press-scale {
+    transition: transform 120ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 120ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .press-scale:active {
+    transform: scale(0.96);
+    opacity: 0.9;
+  }
+
+  /* Micro-interaction: Card lift */
+  .card-lift {
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-trading);
+  }
+
+  /* Micro-interaction: Tab transition */
+  .tab-smooth {
+    transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                background-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Tooltip smooth */
+  .tooltip-enter {
+    animation: tooltipIn 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 }
 
@@ -254,14 +307,9 @@
   transform: rotateY(180deg);
 }
 
-/* Strategy card animations */
-.strategy-card {
-  transition: var(--transition-smooth);
-}
-
-.strategy-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-elegant);
+@keyframes tooltipIn {
+  from { opacity: 0; transform: scale(0.96) translateY(2px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 @layer base {

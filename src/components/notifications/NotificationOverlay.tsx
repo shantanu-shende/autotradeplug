@@ -40,7 +40,7 @@ const NotificationOverlay: React.FC<NotificationOverlayProps> = ({
       case 'trade': return <TrendingUp className="h-4 w-4 text-success" />;
       case 'strategy': return <CheckCircle className="h-4 w-4 text-primary" />;
       case 'portfolio': return <Eye className="h-4 w-4 text-warning" />;
-      default: return <AlertTriangle className="h-4 w-4 text-destructive" />;
+      default: return <AlertTriangle className="h-4 w-4 text-[hsl(var(--warning))]" />;
     }
   };
 
