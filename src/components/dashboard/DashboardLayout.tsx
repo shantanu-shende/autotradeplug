@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +14,7 @@ import {
 import { 
   LayoutDashboard, Bot, TrendingUp, Bell, Menu, X, LogOut,
   Wifi, User, Settings, HelpCircle, ShieldAlert, ChevronUp,
-  Activity, CheckCircle2,
+  Activity, CheckCircle2, Signal, CircleDot,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -138,7 +137,8 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                   <ChevronUp className="w-3 h-3 text-muted-foreground/50 group-hover:text-foreground transition-colors" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end" sideOffset={12} className="w-60 bg-popover border-border/50">
+              <DropdownMenuContent side="right" align="end" sideOffset={12} className="w-64 bg-popover border-border/50">
+                {/* User identity */}
                 <div className="px-3 py-2.5 flex items-center gap-2.5">
                   <Avatar className="w-9 h-9 border border-primary/20">
                     <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
@@ -152,22 +152,43 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                   <CheckCircle2 className="w-3.5 h-3.5 text-[hsl(var(--success))] flex-shrink-0" />
                 </div>
 
-                {/* Automation Status */}
-                <div className="px-3 py-2 mx-2 mb-1 rounded-lg bg-muted/20 border border-border/15">
+                <DropdownMenuSeparator />
+
+                {/* System Status Section */}
+                <DropdownMenuLabel className="text-[9px] uppercase tracking-widest text-muted-foreground/50 px-3 py-1.5">
+                  System Status
+                </DropdownMenuLabel>
+                <div className="px-3 py-2 mx-2 mb-1.5 rounded-lg bg-muted/15 border border-border/10 space-y-1.5">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-muted-foreground">Automation</span>
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <CircleDot className="w-3 h-3" /> Automation
+                    </span>
                     <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))]" />
+                      <div className="w-1.5 h-1.5 rounded-full heartbeat-healthy" />
                       <span className="text-[hsl(var(--success))] font-medium">Active</span>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] mt-1">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-muted-foreground flex items-center gap-1.5">
+                      <Signal className="w-3 h-3" /> Broker
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))]" />
+                      <span className="text-[hsl(var(--success))] font-medium">Connected</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px]">
                     <span className="text-muted-foreground">Last Exec</span>
-                    <span className="text-muted-foreground">2 min ago</span>
+                    <span className="text-muted-foreground/70">2 min ago</span>
                   </div>
                 </div>
 
                 <DropdownMenuSeparator />
+
+                {/* Navigation */}
+                <DropdownMenuLabel className="text-[9px] uppercase tracking-widest text-muted-foreground/50 px-3 py-1.5">
+                  Account
+                </DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => onPageChange('profile')}>
                   <User className="h-4 w-4 mr-2" /> Profile
                 </DropdownMenuItem>
@@ -179,6 +200,11 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
+
+                {/* Danger zone */}
+                <DropdownMenuLabel className="text-[9px] uppercase tracking-widest text-destructive/40 px-3 py-1.5">
+                  Danger Zone
+                </DropdownMenuLabel>
                 <DropdownMenuItem className="text-[hsl(var(--warning))] focus:text-[hsl(var(--warning))]">
                   <ShieldAlert className="h-4 w-4 mr-2" /> Emergency Stop
                   <span className="ml-auto text-[10px] text-muted-foreground">all bots</span>
