@@ -184,6 +184,42 @@
   .pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
+
+  /* Heartbeat status indicators */
+  .heartbeat-healthy {
+    background-color: hsl(var(--success));
+    box-shadow: 0 0 0 0 hsl(var(--success) / 0.4);
+    animation: heartbeat-pulse 2.5s ease-in-out infinite;
+  }
+  .heartbeat-delayed {
+    background-color: hsl(var(--warning));
+    box-shadow: 0 0 0 0 hsl(var(--warning) / 0.3);
+    animation: heartbeat-pulse 3s ease-in-out infinite;
+  }
+  .heartbeat-paused {
+    background-color: hsl(var(--muted-foreground));
+    opacity: 0.5;
+  }
+  .heartbeat-disconnected {
+    background-color: hsl(var(--destructive));
+    opacity: 0.6;
+  }
+
+  /* Mobile expand drawer */
+  .expand-drawer {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 250ms cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity: 0;
+  }
+  .expand-drawer.is-open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+  .expand-drawer > div {
+    overflow: hidden;
+  }
   
   .slide-up {
     animation: slide-up 0.6s ease-out forwards;
@@ -281,6 +317,11 @@
   50% { 
     box-shadow: 0 0 40px hsl(var(--primary) / 0.3);
   }
+}
+
+@keyframes heartbeat-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50% { box-shadow: 0 0 0 3px transparent; opacity: 0.7; }
 }
 
 @keyframes slide-up {
