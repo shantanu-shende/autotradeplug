@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { 
   TrendingUp, TrendingDown, Activity, DollarSign, Bot, AlertTriangle,
   MoreHorizontal, Eye, Pause, Play, Square, TrendingDown as TrendDown,
-  Zap, Target, BarChart3, Clock, ShieldAlert, ChevronDown
+  Zap, Target, BarChart3, Clock, ShieldAlert, ChevronDown, Shield
 } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -138,7 +139,9 @@ const DashboardHome = () => {
               <div className="flex items-center gap-3">
                 <div>
                   <CardTitle className="text-sm sm:text-base font-semibold tracking-tight">Active Strategies</CardTitle>
-                  <CardDescription className="text-[11px] sm:text-xs text-muted-foreground/60">Live automation monitoring</CardDescription>
+                  <CardDescription className="text-[11px] sm:text-xs text-muted-foreground/60">
+                    Live automation monitoring · <span className="text-muted-foreground/40">Updated 30s ago</span>
+                  </CardDescription>
                 </div>
                 {/* Heartbeat indicator with multi-state */}
                 <HeartbeatIndicator status="healthy" />
@@ -152,16 +155,23 @@ const DashboardHome = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56 bg-popover border-border/50">
                   <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70">Global Actions</DropdownMenuLabel>
-                  <DropdownMenuItem><Pause className="h-4 w-4 mr-2" /> Pause All Strategies</DropdownMenuItem>
-                  <DropdownMenuItem><TrendingUp className="h-4 w-4 mr-2 text-[hsl(var(--success))]" /> Close All Profitable</DropdownMenuItem>
-                  <DropdownMenuItem><TrendDown className="h-4 w-4 mr-2 text-destructive" /> Close All Losing</DropdownMenuItem>
+                  <DropdownMenuItem><Pause className="h-3.5 w-3.5 mr-2" /> Pause All Strategies</DropdownMenuItem>
+                  <DropdownMenuItem><TrendingUp className="h-3.5 w-3.5 mr-2 text-[hsl(var(--success)/0.7)]" /> Close All Profitable</DropdownMenuItem>
+                  <DropdownMenuItem><TrendDown className="h-3.5 w-3.5 mr-2 text-destructive/60" /> Close All Losing</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem><DollarSign className="h-4 w-4 mr-2" /> Close All Positions</DropdownMenuItem>
+                  <DropdownMenuItem><DollarSign className="h-3.5 w-3.5 mr-2" /> Close All Positions</DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-amber-500 focus:text-amber-500">
-                    <ShieldAlert className="h-4 w-4 mr-2" /> Emergency Kill Switch
-                    <span className="ml-auto text-[10px] text-muted-foreground">stops exec</span>
-                  </DropdownMenuItem>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuItem className="text-[hsl(var(--warning)/0.8)] focus:text-[hsl(var(--warning)/0.8)]">
+                        <ShieldAlert className="h-3.5 w-3.5 mr-2" /> Emergency Kill Switch
+                        <span className="ml-auto text-[10px] text-muted-foreground/40">stops all exec</span>
+                      </DropdownMenuItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="text-[11px] max-w-[200px]">
+                      Immediately halts all strategy execution and closes pending orders
+                    </TooltipContent>
+                  </Tooltip>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -201,8 +211,17 @@ const DashboardHome = () => {
                     <p className="text-[10px] text-muted-foreground/35 mt-0.5">5 strategies · all running</p>
                   </div>
                 </div>
-                <span className="text-lg sm:text-xl font-bold tracking-tight tabular-nums text-[hsl(var(--success)/0.85)]">{compoundPnl}</span>
+                <div className="text-right">
+                  <span className="text-lg sm:text-xl font-bold tracking-tight tabular-nums text-[hsl(var(--success)/0.85)] block">{compoundPnl}</span>
+                  <span className="text-[9px] text-muted-foreground/30 uppercase tracking-wider">as of now</span>
+                </div>
               </div>
+            </div>
+
+            {/* System supervised footer */}
+            <div className="flex items-center justify-center gap-1.5 py-2 border-t border-border/6">
+              <Shield className="w-2.5 h-2.5 text-muted-foreground/25" />
+              <span className="text-[9px] text-muted-foreground/25 uppercase tracking-widest font-medium">Automation Supervised</span>
             </div>
           </CardContent>
         </Card>
@@ -217,7 +236,10 @@ const DashboardHome = () => {
         <Card className="bg-card/40 border-border/20">
           <CardHeader className="p-4 sm:p-5 pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm sm:text-base font-semibold tracking-tight">Recent Activity</CardTitle>
+              <div>
+                <CardTitle className="text-sm sm:text-base font-semibold tracking-tight">Recent Activity</CardTitle>
+                <p className="text-[10px] text-muted-foreground/35 mt-0.5">Last checked 30s ago</p>
+              </div>
               <Button variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground/60 hover:text-foreground press-scale">
                 View All
               </Button>
@@ -267,11 +289,23 @@ const HeartbeatIndicator = ({ status }: { status: HeartbeatStatus }) => {
     : status === 'paused' ? 'bg-muted/12 border-border/15'
     : 'bg-destructive/5 border-destructive/10';
 
+  const tooltipText = status === 'healthy' ? 'All strategies executing normally'
+    : status === 'delayed' ? 'Some strategies have delayed execution'
+    : status === 'paused' ? 'Strategy execution is paused'
+    : 'Connection lost — strategies not executing';
+
   return (
-    <div className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md border ${bgColor}`}>
-      <div className={`w-1.5 h-1.5 rounded-full ${config.className}`} />
-      <span className={`text-[10px] font-medium ${textColor}`}>{config.label}</span>
-    </div>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md border cursor-default ${bgColor}`}>
+          <div className={`w-1.5 h-1.5 rounded-full ${config.className}`} />
+          <span className={`text-[10px] font-medium ${textColor}`}>{config.label}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="text-[11px]">
+        {tooltipText}
+      </TooltipContent>
+    </Tooltip>
   );
 };
 
@@ -309,7 +343,15 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
           <div className="min-w-0">
             <span className="font-medium text-[13px] tracking-tight truncate block">{strategy.name}</span>
             <span className="text-[10px] text-muted-foreground/40 leading-none">
-              {strategy.details?.assets?.join(' · ')} · {strategy.details?.timeframe} · {strategy.details?.riskMode}
+              {strategy.details?.assets?.join(' · ')} · {strategy.details?.timeframe} ·{' '}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-default border-b border-dotted border-muted-foreground/20">{strategy.details?.riskMode}</span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-[11px]">
+                  Risk profile: {strategy.details?.riskMode} — controls position sizing & stop-loss distance
+                </TooltipContent>
+              </Tooltip>
             </span>
           </div>
         </div>
@@ -323,8 +365,8 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
         </span>
 
         <div className="flex items-center gap-1">
-          <Clock className="h-3 w-3 text-muted-foreground/40" />
-          <span className="text-[11px] text-muted-foreground">{strategy.lastUpdate}</span>
+          <Clock className="h-3 w-3 text-muted-foreground/30" />
+          <span className="text-[11px] text-muted-foreground/50 tabular-nums">{strategy.lastUpdate}</span>
         </div>
 
         <DropdownMenu>
@@ -335,21 +377,21 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52 bg-popover border-border/50">
             <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70">Safe</DropdownMenuLabel>
-            <DropdownMenuItem><Eye className="h-4 w-4 mr-2" /> View Details</DropdownMenuItem>
-            <DropdownMenuItem><Pause className="h-4 w-4 mr-2" /> Pause Strategy</DropdownMenuItem>
-            <DropdownMenuItem><Play className="h-4 w-4 mr-2" /> Restart Strategy</DropdownMenuItem>
+            <DropdownMenuItem><Eye className="h-3.5 w-3.5 mr-2" /> View Details</DropdownMenuItem>
+            <DropdownMenuItem><Pause className="h-3.5 w-3.5 mr-2" /> Pause Strategy</DropdownMenuItem>
+            <DropdownMenuItem><Play className="h-3.5 w-3.5 mr-2" /> Restart Strategy</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground/70">Conditional</DropdownMenuLabel>
-            <DropdownMenuItem><TrendingUp className="h-4 w-4 mr-2 text-[hsl(var(--success))]" /> Close Profitable</DropdownMenuItem>
-            <DropdownMenuItem><TrendDown className="h-4 w-4 mr-2 text-destructive/70" /> Close Losing</DropdownMenuItem>
-            <DropdownMenuItem><Activity className="h-4 w-4 mr-2" /> Reduce Exposure 50%</DropdownMenuItem>
+            <DropdownMenuItem><TrendingUp className="h-3.5 w-3.5 mr-2 text-[hsl(var(--success)/0.7)]" /> Close Profitable</DropdownMenuItem>
+            <DropdownMenuItem><TrendDown className="h-3.5 w-3.5 mr-2 text-destructive/60" /> Close Losing</DropdownMenuItem>
+            <DropdownMenuItem><Activity className="h-3.5 w-3.5 mr-2" /> Reduce Exposure 50%</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-destructive/50">Destructive</DropdownMenuLabel>
-            <DropdownMenuItem className="text-destructive/80 focus:text-destructive/80">
-              <DollarSign className="h-4 w-4 mr-2" /> Close All Positions
+            <DropdownMenuItem className="text-destructive/70 focus:text-destructive/70">
+              <DollarSign className="h-3.5 w-3.5 mr-2" /> Close All Positions
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-destructive/80 focus:text-destructive/80">
-              <Square className="h-4 w-4 mr-2" /> Stop Strategy
+            <DropdownMenuItem className="text-destructive/70 focus:text-destructive/70">
+              <Square className="h-3.5 w-3.5 mr-2" /> Stop Strategy
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -363,7 +405,7 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
         >
           <span className="text-[10px] text-muted-foreground/50 w-4 text-center flex-shrink-0">{index}</span>
           <div className="relative flex-shrink-0">
-            <Icon className="h-4 w-4 text-primary" />
+            <Icon className="h-4 w-4 text-muted-foreground/50" />
             <div className={`absolute -bottom-0.5 -right-0.5 w-[5px] h-[5px] rounded-full ${hbClass}`} />
           </div>
           <div className="flex-1 min-w-0">
@@ -371,11 +413,11 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
               <span className="font-medium text-sm truncate">{strategy.name}</span>
             </div>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className={`text-xs font-semibold ${
-                strategy.pnl.startsWith('+') ? 'text-[hsl(var(--success))]' : 'text-destructive'
+              <span className={`text-xs font-semibold tabular-nums ${
+                strategy.pnl.startsWith('+') ? 'text-[hsl(var(--success)/0.85)]' : 'text-destructive/85'
               }`}>{strategy.pnl}</span>
-              <span className="text-[10px] text-muted-foreground">{strategy.trades} trades</span>
-              <span className="text-[10px] text-muted-foreground/50">· {strategy.lastUpdate}</span>
+              <span className="text-[10px] text-muted-foreground/50">{strategy.trades} trades</span>
+              <span className="text-[10px] text-muted-foreground/30">· {strategy.lastUpdate}</span>
             </div>
           </div>
           <ChevronDown className={`h-3.5 w-3.5 text-muted-foreground/40 flex-shrink-0 transition-transform duration-200 ${isMobileExpanded ? 'rotate-180' : ''}`} />

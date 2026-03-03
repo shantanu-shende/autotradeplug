@@ -113,7 +113,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                           : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
                       }`}
                     >
-                      <Icon className="w-[18px] h-[18px]" />
+                      <Icon className="w-[18px] h-[18px]" strokeWidth={1.75} />
                     </button>
                   </TooltipTrigger>
                   <TooltipContent side="right" sideOffset={12} className="bg-popover border-border/50 text-xs">
@@ -149,7 +149,7 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                     <p className="text-sm font-medium truncate">{userName}</p>
                     <p className="text-[11px] text-muted-foreground truncate">{userEmail}</p>
                   </div>
-                  <CheckCircle2 className="w-3.5 h-3.5 text-[hsl(var(--success))] flex-shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[hsl(var(--success)/0.6)] flex-shrink-0" />
                 </div>
 
                 <DropdownMenuSeparator />
@@ -160,26 +160,26 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                 </DropdownMenuLabel>
                 <div className="px-3 py-2 mx-2 mb-1.5 rounded-lg bg-muted/15 border border-border/10 space-y-1.5">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <CircleDot className="w-3 h-3" /> Automation
+                    <span className="text-muted-foreground/70 flex items-center gap-1.5">
+                      <CircleDot className="w-3 h-3" strokeWidth={1.75} /> Automation
                     </span>
                     <div className="flex items-center gap-1">
                       <div className="w-1.5 h-1.5 rounded-full heartbeat-healthy" />
-                      <span className="text-[hsl(var(--success))] font-medium">Active</span>
+                      <span className="text-[hsl(var(--success)/0.7)] font-medium">Active</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-muted-foreground flex items-center gap-1.5">
-                      <Signal className="w-3 h-3" /> Broker
+                    <span className="text-muted-foreground/70 flex items-center gap-1.5">
+                      <Signal className="w-3 h-3" strokeWidth={1.75} /> Broker
                     </span>
                     <div className="flex items-center gap-1">
-                      <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))]" />
-                      <span className="text-[hsl(var(--success))] font-medium">Connected</span>
+                      <div className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success)/0.7)]" />
+                      <span className="text-[hsl(var(--success)/0.7)] font-medium">Connected</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-muted-foreground">Last Exec</span>
-                    <span className="text-muted-foreground/70">2 min ago</span>
+                    <span className="text-muted-foreground/70">Last Sync</span>
+                    <span className="text-muted-foreground/50 tabular-nums">30s ago</span>
                   </div>
                 </div>
 
@@ -190,13 +190,13 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                   Account
                 </DropdownMenuLabel>
                 <DropdownMenuItem onClick={() => onPageChange('profile')}>
-                  <User className="h-4 w-4 mr-2" /> Profile
+                  <User className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} /> Profile
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onPageChange('settings')}>
-                  <Settings className="h-4 w-4 mr-2" /> Settings
+                  <Settings className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} /> Settings
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onPageChange('support')}>
-                  <HelpCircle className="h-4 w-4 mr-2" /> Support
+                  <HelpCircle className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} /> Support
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
@@ -205,14 +205,14 @@ const DashboardLayout = ({ children, currentPage, onPageChange, onLogout }: Dash
                 <DropdownMenuLabel className="text-[9px] uppercase tracking-widest text-destructive/40 px-3 py-1.5">
                   Danger Zone
                 </DropdownMenuLabel>
-                <DropdownMenuItem className="text-[hsl(var(--warning))] focus:text-[hsl(var(--warning))]">
-                  <ShieldAlert className="h-4 w-4 mr-2" /> Emergency Stop
-                  <span className="ml-auto text-[10px] text-muted-foreground">all bots</span>
+                <DropdownMenuItem className="text-[hsl(var(--warning)/0.7)] focus:text-[hsl(var(--warning)/0.7)]">
+                  <ShieldAlert className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} /> Emergency Stop
+                  <span className="ml-auto text-[10px] text-muted-foreground/40">all bots</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onLogout} className="text-destructive focus:text-destructive">
-                  <LogOut className="h-4 w-4 mr-2" /> Sign Out
+                <DropdownMenuItem onClick={onLogout} className="text-destructive/70 focus:text-destructive/70">
+                  <LogOut className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
