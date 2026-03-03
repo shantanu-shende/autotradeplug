@@ -99,23 +99,23 @@ const DashboardHome = () => {
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((stat, index) => (
           <motion.div
             key={stat.title}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.08 }}
+            transition={{ delay: index * 0.06, duration: 0.4 }}
           >
-            <Card className="bg-card/40 border-border/30 hover:border-border/50 card-lift">
+            <Card className="bg-card/40 border-border/20 hover:border-border/35 card-lift">
               <CardContent className="p-4 sm:p-5">
-                <div className="text-xl sm:text-2xl font-bold tracking-tight mb-1">{stat.value}</div>
+                <div className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mb-1.5">{stat.value}</div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] sm:text-xs text-muted-foreground">{stat.title}</span>
+                  <span className="text-[11px] sm:text-xs text-muted-foreground/70">{stat.title}</span>
                   {stat.change && (
-                    <span className={`text-[10px] sm:text-xs ${stat.trend === 'up' ? 'text-[hsl(var(--success))]' : 'text-destructive'}`}>
+                    <span className={`text-[10px] sm:text-xs font-medium ${stat.trend === 'up' ? 'text-[hsl(var(--success)/0.8)]' : 'text-destructive/80'}`}>
                       {stat.change}
                     </span>
                   )}
@@ -128,17 +128,17 @@ const DashboardHome = () => {
 
       {/* Active Strategies */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35 }}
+        transition={{ delay: 0.25, duration: 0.4 }}
       >
-        <Card className="bg-card/40 border-border/30">
+        <Card className="bg-card/40 border-border/20">
           <CardHeader className="p-4 sm:p-5 pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div>
-                  <CardTitle className="text-base sm:text-lg font-semibold">Active Strategies</CardTitle>
-                  <CardDescription className="text-xs sm:text-sm">Live automation monitoring</CardDescription>
+                  <CardTitle className="text-sm sm:text-base font-semibold tracking-tight">Active Strategies</CardTitle>
+                  <CardDescription className="text-[11px] sm:text-xs text-muted-foreground/60">Live automation monitoring</CardDescription>
                 </div>
                 {/* Heartbeat indicator with multi-state */}
                 <HeartbeatIndicator status="healthy" />
@@ -168,7 +168,7 @@ const DashboardHome = () => {
           </CardHeader>
           <CardContent className="p-0">
             {/* Desktop Table Header */}
-            <div className="hidden lg:grid grid-cols-[32px_1.4fr_100px_120px_100px_36px] items-center px-5 py-2 text-[10px] uppercase tracking-wider font-medium text-muted-foreground/60 border-b border-border/15">
+            <div className="hidden lg:grid grid-cols-[32px_1.4fr_100px_120px_100px_36px] items-center px-5 py-2.5 text-[10px] uppercase tracking-wider font-medium text-muted-foreground/40 border-b border-border/10">
               <span>#</span>
               <span>Strategy</span>
               <span>Trades</span>
@@ -191,17 +191,17 @@ const DashboardHome = () => {
             })}
 
             {/* Compound P&L Summary */}
-            <div className="relative">
-              <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
-              <div className="flex items-center justify-between px-4 sm:px-5 py-4 bg-muted/8">
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-6 rounded-full bg-[hsl(var(--success))]/30" />
+            <div className="relative mt-1">
+              <div className="absolute inset-x-0 top-0 h-px bg-border/12" />
+              <div className="flex items-center justify-between px-4 sm:px-5 py-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-0.5 h-5 rounded-full bg-[hsl(var(--success)/0.25)]" />
                   <div>
-                    <span className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground font-medium">Live Automation P&L</span>
-                    <p className="text-[10px] text-muted-foreground/50 mt-0.5">5 strategies · all running</p>
+                    <span className="text-[10px] sm:text-xs uppercase tracking-wider text-muted-foreground/60 font-medium">Live Automation P&L</span>
+                    <p className="text-[10px] text-muted-foreground/35 mt-0.5">5 strategies · all running</p>
                   </div>
                 </div>
-                <span className="text-lg sm:text-xl font-bold tracking-tight text-[hsl(var(--success))]">{compoundPnl}</span>
+                <span className="text-lg sm:text-xl font-bold tracking-tight tabular-nums text-[hsl(var(--success)/0.85)]">{compoundPnl}</span>
               </div>
             </div>
           </CardContent>
@@ -210,31 +210,31 @@ const DashboardHome = () => {
 
       {/* Recent Alerts */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.35, duration: 0.4 }}
       >
-        <Card className="bg-card/40 border-border/30">
+        <Card className="bg-card/40 border-border/20">
           <CardHeader className="p-4 sm:p-5 pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base sm:text-lg font-semibold">Recent Activity</CardTitle>
-              <Button variant="outline" size="sm" className="h-7 text-[11px] border-border/40 press-scale">
+              <CardTitle className="text-sm sm:text-base font-semibold tracking-tight">Recent Activity</CardTitle>
+              <Button variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground/60 hover:text-foreground press-scale">
                 View All
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-4 sm:p-5 pt-0 space-y-1.5">
+          <CardContent className="p-4 sm:p-5 pt-0 space-y-1">
             {recentAlerts.map((alert, index) => (
               <div
                 key={index}
-                className="flex items-start gap-3 p-3 rounded-lg bg-muted/10 row-hover"
+                className="flex items-start gap-3 p-3 rounded-lg row-hover"
               >
                 <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${
-                  alert.type === 'trade' ? 'bg-[hsl(var(--success))]' : 'bg-[hsl(var(--warning))]'
+                  alert.type === 'trade' ? 'bg-[hsl(var(--success)/0.6)]' : 'bg-[hsl(var(--warning)/0.6)]'
                 }`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm leading-relaxed">{alert.message}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{alert.time}</p>
+                  <p className="text-xs sm:text-[13px] leading-relaxed text-foreground/80">{alert.message}</p>
+                  <p className="text-[10px] text-muted-foreground/40 mt-0.5">{alert.time}</p>
                 </div>
               </div>
             ))}
@@ -258,17 +258,17 @@ const heartbeatConfig: Record<HeartbeatStatus, { label: string; className: strin
 
 const HeartbeatIndicator = ({ status }: { status: HeartbeatStatus }) => {
   const config = heartbeatConfig[status];
-  const textColor = status === 'healthy' ? 'text-[hsl(var(--success))]'
-    : status === 'delayed' ? 'text-[hsl(var(--warning))]'
-    : status === 'paused' ? 'text-muted-foreground'
-    : 'text-destructive/70';
-  const bgColor = status === 'healthy' ? 'bg-[hsl(var(--success))]/8 border-[hsl(var(--success))]/15'
-    : status === 'delayed' ? 'bg-[hsl(var(--warning))]/8 border-[hsl(var(--warning))]/15'
-    : status === 'paused' ? 'bg-muted/20 border-border/20'
-    : 'bg-destructive/8 border-destructive/15';
+  const textColor = status === 'healthy' ? 'text-[hsl(var(--success)/0.7)]'
+    : status === 'delayed' ? 'text-[hsl(var(--warning)/0.7)]'
+    : status === 'paused' ? 'text-muted-foreground/60'
+    : 'text-destructive/50';
+  const bgColor = status === 'healthy' ? 'bg-[hsl(var(--success))]/5 border-[hsl(var(--success))]/10'
+    : status === 'delayed' ? 'bg-[hsl(var(--warning))]/5 border-[hsl(var(--warning))]/10'
+    : status === 'paused' ? 'bg-muted/12 border-border/15'
+    : 'bg-destructive/5 border-destructive/10';
 
   return (
-    <div className={`hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md border ${bgColor}`}>
+    <div className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md border ${bgColor}`}>
       <div className={`w-1.5 h-1.5 rounded-full ${config.className}`} />
       <span className={`text-[10px] font-medium ${textColor}`}>{config.label}</span>
     </div>
@@ -298,26 +298,26 @@ const ActiveStrategyRow = ({ strategy, index, Icon }: StrategyRowProps) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Desktop row */}
-      <div className="hidden lg:grid grid-cols-[32px_1.4fr_100px_120px_100px_36px] items-center px-5 py-3 row-hover border-b border-border/10 last:border-b-0">
-        <span className="text-xs text-muted-foreground/60 font-medium">{index}</span>
+      <div className="hidden lg:grid grid-cols-[32px_1.4fr_100px_120px_100px_36px] items-center px-5 py-3.5 row-hover border-b border-border/8 last:border-b-0">
+        <span className="text-[11px] text-muted-foreground/40 font-medium tabular-nums">{index}</span>
 
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="relative flex-shrink-0">
-            <Icon className="h-4 w-4 text-primary" />
-            <div className={`absolute -bottom-0.5 -right-0.5 w-[6px] h-[6px] rounded-full ${hbClass}`} />
+            <Icon className="h-4 w-4 text-muted-foreground/50" />
+            <div className={`absolute -bottom-0.5 -right-0.5 w-[5px] h-[5px] rounded-full ${hbClass}`} />
           </div>
           <div className="min-w-0">
-            <span className="font-medium text-sm truncate block">{strategy.name}</span>
-            <span className="text-[10px] text-muted-foreground/50 leading-none">
+            <span className="font-medium text-[13px] tracking-tight truncate block">{strategy.name}</span>
+            <span className="text-[10px] text-muted-foreground/40 leading-none">
               {strategy.details?.assets?.join(' · ')} · {strategy.details?.timeframe} · {strategy.details?.riskMode}
             </span>
           </div>
         </div>
 
-        <span className="text-xs text-muted-foreground">{strategy.trades} today</span>
+        <span className="text-[11px] text-muted-foreground/60 tabular-nums">{strategy.trades} today</span>
 
-        <span className={`text-sm font-semibold ${
-          strategy.pnl.startsWith('+') ? 'text-[hsl(var(--success))]' : 'text-destructive'
+        <span className={`text-sm font-semibold tabular-nums ${
+          strategy.pnl.startsWith('+') ? 'text-[hsl(var(--success)/0.85)]' : 'text-destructive/85'
         }`}>
           {strategy.pnl}
         </span>
