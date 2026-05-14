@@ -46,7 +46,7 @@ export function LiveForexProvider({
   const broadcastRef = useRef<BroadcastChannel | null>(null);
   const leaderChannelRef = useRef<BroadcastChannel | null>(null);
   const instanceId = useRef(Math.random().toString(36).substr(2, 9));
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // OPTIMIZATION: Batch tick updates to reduce state updates
   const batchCollectorRef = useRef<BatchCollector<ForexTick> | null>(null);
