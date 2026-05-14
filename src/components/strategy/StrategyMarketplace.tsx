@@ -193,7 +193,7 @@ export const StrategyMarketplace = () => {
           <p className="text-muted-foreground">Discover and deploy proven trading strategies</p>
         </div>
         <Button className="bg-gradient-primary">
-          <Plus className="h-4 w-4 mr-2" />
+          <Plus className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} />
           Create Strategy
         </Button>
       </div>
@@ -204,7 +204,7 @@ export const StrategyMarketplace = () => {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.75} />
                 <Input
                   placeholder="Search strategies..."
                   value={searchTerm}
@@ -225,7 +225,7 @@ export const StrategyMarketplace = () => {
                     onClick={() => setSelectedCategory(category.id)}
                     className="flex items-center space-x-2"
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
                     <span>{category.name}</span>
                   </Button>
                 );
@@ -238,7 +238,7 @@ export const StrategyMarketplace = () => {
               {filteredStrategies.length} strategies found
             </p>
             <Button variant="outline" size="sm">
-              <Filter className="h-4 w-4 mr-2" />
+              <Filter className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} />
               More Filters
             </Button>
           </div>
@@ -267,7 +267,7 @@ export const StrategyMarketplace = () => {
       {filteredStrategies.length === 0 && (
         <Card className="glass-panel">
           <CardContent className="p-12 text-center">
-            <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.75} />
             <h3 className="text-lg font-semibold mb-2">No strategies found</h3>
             <p className="text-muted-foreground">
               Try adjusting your search criteria or create a new strategy.

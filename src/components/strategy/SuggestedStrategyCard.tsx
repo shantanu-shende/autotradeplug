@@ -82,7 +82,7 @@ const SuggestedStrategyCard = () => {
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-2">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Lightbulb className="w-5 h-5 text-primary" />
+              <Lightbulb className="h-3.5 w-3.5 text-primary" strokeWidth={1.75} />
             </div>
             <div>
               <CardTitle className="text-lg">Strategy of the Day</CardTitle>
@@ -90,7 +90,7 @@ const SuggestedStrategyCard = () => {
             </div>
           </div>
           <Badge className="bg-primary/20 text-primary border-primary/30">
-            <Zap className="w-3 h-3 mr-1" />
+            <Zap className="h-3.5 w-3.5 mr-1" strokeWidth={1.75} />
             Trending
           </Badge>
         </div>
@@ -166,7 +166,7 @@ const SuggestedStrategyCard = () => {
           <div className="space-y-4">
             <div>
               <h4 className="text-sm font-medium mb-3 flex items-center">
-                <TrendingUp className="w-4 h-4 mr-2 text-green-500" />
+                <TrendingUp className="h-3.5 w-3.5 mr-2 text-green-500" strokeWidth={1.75} />
                 14-Day Backtest Performance
               </h4>
               <div className="h-32 w-full">
@@ -206,7 +206,7 @@ const SuggestedStrategyCard = () => {
                   onClick={() => handleAction('Deploy')}
                   disabled={isAnimating}
                 >
-                  <Rocket className="w-4 h-4 mr-2" />
+                  <Rocket className="h-3.5 w-3.5 mr-2" strokeWidth={1.75} />
                   Deploy Strategy
                 </Button>
               </motion.div>
@@ -218,7 +218,7 @@ const SuggestedStrategyCard = () => {
                   onClick={() => handleAction('Backtest')}
                   disabled={isAnimating}
                 >
-                  <TestTube className="w-4 h-4 mr-1" />
+                  <TestTube className="h-3.5 w-3.5 mr-1" strokeWidth={1.75} />
                   Backtest
                 </Button>
                 <Button 
@@ -227,7 +227,7 @@ const SuggestedStrategyCard = () => {
                   onClick={() => handleAction('Simulate')}
                   disabled={isAnimating}
                 >
-                  <Play className="w-4 h-4 mr-1" />
+                  <Play className="h-3.5 w-3.5 mr-1" strokeWidth={1.75} />
                   Simulate
                 </Button>
               </div>
@@ -238,7 +238,7 @@ const SuggestedStrategyCard = () => {
                 className="w-full text-xs"
                 onClick={() => handleAction('View Details')}
               >
-                <Target className="w-3 h-3 mr-1" />
+                <Target className="h-3.5 w-3.5 mr-1" strokeWidth={1.75} />
                 View Full Strategy Details
               </Button>
             </div>

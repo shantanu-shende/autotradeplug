@@ -57,13 +57,13 @@ const EnhancedBrokerCard: React.FC<BrokerCardProps> = ({
   const getStatusIcon = () => {
     switch (status) {
       case 'connected':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle className="h-3.5 w-3.5 text-success" strokeWidth={1.75} />;
       case 'syncing':
-        return <RefreshCw className="h-4 w-4 text-warning animate-spin" />;
+        return <RefreshCw className="h-3.5 w-3.5 text-warning animate-spin" strokeWidth={1.75} />;
       case 'error':
-        return <AlertTriangle className="h-4 w-4 text-destructive" />;
+        return <AlertTriangle className="h-3.5 w-3.5 text-destructive" strokeWidth={1.75} />;
       default:
-        return <WifiOff className="h-4 w-4 text-muted-foreground" />;
+        return <WifiOff className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.75} />;
     }
   };
 
@@ -143,7 +143,7 @@ const EnhancedBrokerCard: React.FC<BrokerCardProps> = ({
                   onClick={() => setShowBalance(!showBalance)}
                   className="h-6 w-6 p-0"
                 >
-                  {showBalance ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                  {showBalance ? <EyeOff className="h-3.5 w-3.5" strokeWidth={1.75} /> : <Eye className="h-3.5 w-3.5" strokeWidth={1.75} />}
                 </Button>
               </div>
               <div className="font-medium">
@@ -167,7 +167,7 @@ const EnhancedBrokerCard: React.FC<BrokerCardProps> = ({
             {status === 'error' && errorMessage && (
               <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/20">
                 <div className="flex items-center space-x-2">
-                  <AlertTriangle className="h-4 w-4 text-destructive" />
+                  <AlertTriangle className="h-3.5 w-3.5 text-destructive" strokeWidth={1.75} />
                   <span className="text-sm text-destructive">{errorMessage}</span>
                 </div>
               </div>
@@ -177,7 +177,7 @@ const EnhancedBrokerCard: React.FC<BrokerCardProps> = ({
             {tokenExpiry && (
               <div className="p-2 rounded-lg bg-warning/10 border border-warning/20">
                 <div className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4 text-warning" />
+                  <Clock className="h-3.5 w-3.5 text-warning" strokeWidth={1.75} />
                   <span className="text-sm text-warning">
                     Token expires: {tokenExpiry}
                   </span>
@@ -219,7 +219,7 @@ const EnhancedBrokerCard: React.FC<BrokerCardProps> = ({
                       disabled={isRefreshing || status === 'disconnected'}
                       className="h-8 w-8 p-0"
                     >
-                      <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} strokeWidth={1.75} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -230,13 +230,13 @@ const EnhancedBrokerCard: React.FC<BrokerCardProps> = ({
                 <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Settings className="h-4 w-4" />
+                      <Settings className="h-3.5 w-3.5" strokeWidth={1.75} />
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle className="flex items-center space-x-2">
-                        <Settings className="h-5 w-5" />
+                        <Settings className="h-3.5 w-3.5" strokeWidth={1.75} />
                         <span>{name} Settings</span>
                       </DialogTitle>
                     </DialogHeader>
@@ -264,7 +264,7 @@ const EnhancedBrokerCard: React.FC<BrokerCardProps> = ({
                       <div>
                         <h4 className="font-medium mb-2">Security</h4>
                         <div className="flex items-center space-x-2 text-sm">
-                          <Shield className="h-4 w-4 text-success" />
+                          <Shield className="h-3.5 w-3.5 text-success" strokeWidth={1.75} />
                           <span>API connection is encrypted and secure</span>
                         </div>
                       </div>
