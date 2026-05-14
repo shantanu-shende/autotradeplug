@@ -27,13 +27,13 @@ const BrokerCard: React.FC<BrokerCardProps> = ({
   const getStatusIcon = () => {
     switch (broker.status) {
       case 'connected':
-        return <CheckCircle className="h-4 w-4 text-success" />;
+        return <CheckCircle className="h-3.5 w-3.5 text-success" strokeWidth={1.75} />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-destructive" />;
+        return <AlertCircle className="h-3.5 w-3.5 text-destructive" strokeWidth={1.75} />;
       case 'expired':
-        return <XCircle className="h-4 w-4 text-warning" />;
+        return <XCircle className="h-3.5 w-3.5 text-warning" strokeWidth={1.75} />;
       default:
-        return <WifiOff className="h-4 w-4 text-muted-foreground" />;
+        return <WifiOff className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.75} />;
     }
   };
 
@@ -55,7 +55,7 @@ const BrokerCard: React.FC<BrokerCardProps> = ({
       return (
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={onRefresh}>
-            <Wifi className="h-4 w-4 mr-1" />
+            <Wifi className="h-3.5 w-3.5 mr-1" strokeWidth={1.75} />
             Refresh
           </Button>
           <Button variant="ghost" size="sm" onClick={onDisconnect}>

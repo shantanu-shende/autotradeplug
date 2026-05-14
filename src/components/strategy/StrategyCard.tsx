@@ -87,7 +87,7 @@ export const StrategyCard = ({ strategy, onInfo, onDeploy, onTest }: StrategyCar
           <CardContent className="p-6 h-full flex flex-col">
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-2">
-                <CategoryIcon className="h-5 w-5 text-primary" />
+                <CategoryIcon className="h-3.5 w-3.5 text-primary" strokeWidth={1.75} />
                 <Badge variant="secondary" className="text-xs">
                   {strategy.category}
                 </Badge>
@@ -112,7 +112,7 @@ export const StrategyCard = ({ strategy, onInfo, onDeploy, onTest }: StrategyCar
                 
                 <div className="text-center p-3 rounded-lg bg-muted/20">
                   <div className="flex items-center justify-center space-x-1">
-                    <Users className="h-4 w-4 text-primary" />
+                    <Users className="h-3.5 w-3.5 text-primary" strokeWidth={1.75} />
                     <span className="text-2xl font-bold">{strategy.live_users}</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Live Users</p>
@@ -181,7 +181,7 @@ export const StrategyCard = ({ strategy, onInfo, onDeploy, onTest }: StrategyCar
                   onInfo(strategy);
                 }}
               >
-                <Info className="h-3 w-3" />
+                <Info className="h-3.5 w-3.5" strokeWidth={1.75} />
                 <span>Info</span>
               </Button>
               
@@ -193,7 +193,7 @@ export const StrategyCard = ({ strategy, onInfo, onDeploy, onTest }: StrategyCar
                   onDeploy(strategy);
                 }}
               >
-                <Rocket className="h-3 w-3" />
+                <Rocket className="h-3.5 w-3.5" strokeWidth={1.75} />
                 <span>Deploy</span>
               </Button>
               
@@ -206,7 +206,7 @@ export const StrategyCard = ({ strategy, onInfo, onDeploy, onTest }: StrategyCar
                   onTest(strategy);
                 }}
               >
-                <TestTube className="h-3 w-3" />
+                <TestTube className="h-3.5 w-3.5" strokeWidth={1.75} />
                 <span>Test</span>
               </Button>
             </div>

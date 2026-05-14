@@ -63,8 +63,8 @@ const BrokerConnectionDashboard = () => {
   const getStatusIndicator = (status: string) => {
     switch (status) {
       case 'connected': return <div className="w-2 h-2 rounded-full bg-[hsl(var(--success))]" />;
-      case 'connecting': return <Clock className="w-3.5 h-3.5 text-[hsl(var(--warning))] animate-spin" />;
-      case 'error': return <AlertTriangle className="w-3.5 h-3.5 text-[hsl(var(--warning))]" />;
+      case 'connecting': return <Clock className="h-3.5 w-3.5 text-[hsl(var(--warning))] animate-spin" strokeWidth={1.75} />;
+      case 'error': return <AlertTriangle className="h-3.5 w-3.5 text-[hsl(var(--warning))]" strokeWidth={1.75} />;
       default: return <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />;
     }
   };
@@ -76,7 +76,7 @@ const BrokerConnectionDashboard = () => {
         <Card className="bg-card/40 border-border/30 card-lift">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center gap-2.5">
-              <Wifi className="w-4 h-4 text-primary flex-shrink-0" />
+              <Wifi className="h-3.5 w-3.5 text-primary flex-shrink-0" strokeWidth={1.75} />
               <div>
                 <p className="text-[11px] text-muted-foreground">Connected</p>
                 <p className="text-xl font-bold">{connectedCount}/{brokers.length}</p>
@@ -88,7 +88,7 @@ const BrokerConnectionDashboard = () => {
         <Card className="bg-card/40 border-border/30 card-lift">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center gap-2.5">
-              <TrendingUp className="w-4 h-4 text-[hsl(var(--success))] flex-shrink-0" />
+              <TrendingUp className="h-3.5 w-3.5 text-[hsl(var(--success))] flex-shrink-0" strokeWidth={1.75} />
               <div>
                 <p className="text-[11px] text-muted-foreground">Total Balance</p>
                 <p className="text-xl font-bold">{animatedBalance}</p>
@@ -100,7 +100,7 @@ const BrokerConnectionDashboard = () => {
         <Card className="bg-card/40 border-border/30 card-lift col-span-2 lg:col-span-1">
           <CardContent className="p-4 sm:p-5">
             <div className="flex items-center gap-2.5">
-              <Shield className="w-4 h-4 text-primary flex-shrink-0" />
+              <Shield className="h-3.5 w-3.5 text-primary flex-shrink-0" strokeWidth={1.75} />
               <div className="flex-1">
                 <p className="text-[11px] text-muted-foreground">Connection Health</p>
                 <div className="flex items-center gap-2 mt-1">
@@ -177,18 +177,18 @@ const BrokerConnectionDashboard = () => {
                 {broker.status === 'connected' ? (
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" className="flex-1 h-8 text-xs press-scale" onClick={() => handleDisconnect(broker.id)}>
-                      <WifiOff className="w-3.5 h-3.5 mr-1.5" /> Disconnect
+                      <WifiOff className="h-3.5 w-3.5 mr-1.5" strokeWidth={1.75} /> Disconnect
                     </Button>
                     <Button variant="outline" size="sm" className="h-8 w-8 p-0 press-scale">
-                      <Settings className="w-3.5 h-3.5" />
+                      <Settings className="h-3.5 w-3.5" strokeWidth={1.75} />
                     </Button>
                   </div>
                 ) : (
                   <Button className="w-full h-8 text-xs press-scale" onClick={() => handleConnect(broker.id)} disabled={isConnecting === broker.id}>
                     {isConnecting === broker.id ? (
-                      <><Clock className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Connecting…</>
+                      <><Clock className="h-3.5 w-3.5 mr-1.5 animate-spin" strokeWidth={1.75} /> Connecting…</>
                     ) : (
-                      <><Plus className="w-3.5 h-3.5 mr-1.5" /> Connect</>
+                      <><Plus className="h-3.5 w-3.5 mr-1.5" strokeWidth={1.75} /> Connect</>
                     )}
                   </Button>
                 )}
@@ -201,7 +201,7 @@ const BrokerConnectionDashboard = () => {
       {/* Request Broker */}
       <Card className="border-dashed border-2 border-border/20 bg-card/20">
         <CardContent className="p-5 text-center">
-          <Plus className="w-6 h-6 text-muted-foreground/40 mx-auto mb-2" />
+          <Plus className="w-6 h-6 text-muted-foreground/40 mx-auto mb-2" strokeWidth={1.75} />
           <p className="text-sm font-medium mb-1">Need another broker?</p>
           <p className="text-xs text-muted-foreground mb-3">Request support for additional brokers</p>
           <Button variant="outline" size="sm" className="h-7 text-xs press-scale">Request Broker</Button>
