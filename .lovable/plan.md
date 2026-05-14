@@ -1,111 +1,34 @@
+## Goal
+Apply the established icon weight standard (size `h-3.5 w-3.5`, `strokeWidth={1.75}`) to the Broker Connection Dashboard and Strategy Marketplace pages, matching the dashboard refinement pass.
 
+## Scope
+UI only. No logic, no API, no structural layout changes. Only icon `className` sizing and `strokeWidth` props are updated.
 
-# Real-Time WebSocket Updates for Bot Status and Positions
+## Files
 
-## Overview
+### 1. `src/components/broker/BrokerConnectionDashboard.tsx`
+- Normalize all Lucide icons to `h-3.5 w-3.5` and add `strokeWidth={1.75}`.
+- Affected icons: `Wifi`, `TrendingUp`, `Shield`, `Clock`, `AlertTriangle`, `WifiOff`, `Settings`, `Plus`, `CheckCircle`, status icons in broker cards.
+- Exception: keep the larger empty-state `Plus` (currently `w-6 h-6`) at its existing size since it serves as an illustrative element, but still apply `strokeWidth={1.75}`.
 
-Add live, automatic updates to the Trading Bots dashboard so that bot status changes, portfolio updates, and position changes appear instantly without needing to click "Refresh". This uses the database's built-in real-time subscription system (already enabled on the relevant tables).
+### 2. `src/components/broker/BrokerCard.tsx` and `src/components/broker/EnhancedBrokerCard.tsx`
+- Same standardization for any icons rendered inside broker cards used by the dashboard.
 
-## What Changes for Users
+### 3. `src/components/broker/BrokerSummaryStats.tsx`
+- Standardize stat icons to `h-3.5 w-3.5` `strokeWidth={1.75}`.
 
-- Bot cards will automatically update when their status changes (running/paused/stopped)
-- Portfolio balances, equity, and margin will update live
-- Position P&L will stream in real-time
-- A connection status indicator will show whether live updates are active
-- No more manual refresh needed -- everything stays in sync
+### 4. `src/components/strategy/StrategyMarketplace.tsx`
+- Normalize inline action/meta icons (`Plus`, `Search`, `Filter`, category `Icon`) to `h-3.5 w-3.5` `strokeWidth={1.75}`.
+- Exception: keep the empty-state `Target` illustration (`h-12 w-12`) at its current size; apply `strokeWidth={1.75}` only.
 
-## Technical Approach
+### 5. `src/components/strategy/StrategyCard.tsx` and `src/components/strategy/SuggestedStrategyCard.tsx`
+- Standardize icons used inside marketplace cards for consistency.
 
-Instead of building a separate WebSocket backend function, we use the database's built-in real-time change feed. The `trading_bots`, `portfolios`, `positions`, and `orders` tables already have real-time enabled from the initial migration.
+## Out of scope
+- Other pages (already done or not requested).
+- Color, spacing, layout, copy, or behavior changes.
+- Empty-state hero illustrations beyond stroke weight.
 
-## Implementation Details
-
-### 1. Create a new hook: `src/hooks/useRealtimeTradingData.ts`
-
-A centralized hook that subscribes to real-time changes on all HFT tables, scoped to the authenticated user:
-
-- **Channel subscriptions** for `trading_bots`, `portfolios`, `positions`, and `orders` tables
-- Listens for `INSERT`, `UPDATE`, and `DELETE` events
-- Provides callback-based API so consumers can react to changes
-- Handles connection status tracking (connected/disconnected)
-- Auto-cleanup on unmount
-
-```text
-Hook API:
-  useRealtimeTradingData({
-    onBotChange: (payload) => void,
-    onPortfolioChange: (payload) => void,
-    onPositionChange: (payload) => void,
-    onOrderChange: (payload) => void,
-  }) => { isConnected: boolean }
-```
-
-### 2. Update `src/hooks/useTradingBot.ts`
-
-- Import and use `useRealtimeTradingData`
-- On `INSERT` events: add new bot to local state
-- On `UPDATE` events: merge updated fields into matching bot
-- On `DELETE` events: remove bot from local state
-- Expose `isRealtimeConnected` status
-
-### 3. Update `src/hooks/usePortfolio.ts`
-
-- Same pattern: subscribe to portfolio, position, and order changes
-- Automatically update local state when DB rows change
-- Portfolio balance/equity changes reflect instantly
-
-### 4. Update `src/components/trading-bot/TradingBotDashboard.tsx`
-
-- Show a real-time connection indicator (green dot = live, red = disconnected)
-- Remove the need for manual refresh when realtime is connected
-- Stats cards (Active Bots, Total Equity, etc.) update automatically
-
-### 5. Update `src/components/trading-bot/BotCard.tsx`
-
-- Accept bot data as prop (already does) -- updates flow from parent
-- Add subtle animation when status changes (e.g., flash border)
-
-### 6. Update `src/components/portfolio/PortfolioManager.tsx`
-
-- Portfolio cards update in real-time
-- Position P&L updates stream live
-
-## Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/hooks/useRealtimeTradingData.ts` | Central realtime subscription hook |
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/hooks/useTradingBot.ts` | Add realtime listener, auto-update state |
-| `src/hooks/usePortfolio.ts` | Add realtime listener, auto-update state |
-| `src/components/trading-bot/TradingBotDashboard.tsx` | Add connection indicator, pass realtime status |
-| `src/components/trading-bot/BotCard.tsx` | Add transition animation on status change |
-| `src/components/portfolio/PortfolioManager.tsx` | Wire in realtime portfolio updates |
-
-## Realtime Subscription Pattern
-
-```text
-supabase
-  .channel('trading-realtime')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'trading_bots' }, handler)
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'portfolios' }, handler)
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'positions' }, handler)
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, handler)
-  .subscribe()
-```
-
-RLS policies already filter data to the authenticated user, so each user only receives changes to their own records.
-
-## No Database or Edge Function Changes Required
-
-The migration that created these tables already included:
-```sql
-ALTER PUBLICATION supabase_realtime ADD TABLE trading_bots, portfolios, positions, orders;
-```
-
-So no additional backend work is needed.
-
+## Verification
+- Visually confirm marketplace and broker dashboard icons render consistently with the main dashboard.
+- No TypeScript or runtime regressions.
