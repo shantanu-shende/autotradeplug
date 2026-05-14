@@ -229,9 +229,8 @@ const StrategyManager: React.FC = () => {
           user_id: user.id,
           strategy_name: formData.strategy_name,
           description: formData.description,
-          strategy_type: formData.strategy_type,
           risk_level: formData.risk_level,
-          config: { code: formData.code }
+          config: { code: formData.code, strategy_type: formData.strategy_type }
         });
 
       if (error) throw error;
