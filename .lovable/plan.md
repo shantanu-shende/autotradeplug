@@ -1,22 +1,39 @@
 ## Goal
-Add a single-command TypeScript typecheck and verify the previously fixed TS2322/TS2503 errors are gone.
+Add a GitHub Actions CI workflow that builds the production bundle on every push and pull request, failing the run if the build does not compile.
 
 ## Change
-Add a `typecheck` script to `package.json`:
+Create `.github/workflows/ci.yml`:
 
-```json
-"typecheck": "tsc -p tsconfig.json --noEmit"
+```yaml
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
 ```
 
-(Other scripts left untouched.)
+Notes:
+- Uses `npm ci` for a deterministic install from `package-lock.json`.
+- Runs `typecheck` first (added previously) so type errors fail fast before the bundle step.
+- `npm run build` (Vite) is the production compile gate; non-zero exit fails the job.
 
 ## Verification
-Run `bun run typecheck` and confirm no `TS2322` or `TS2503` diagnostics in:
-- `src/components/strategy/StrategyManager.tsx`
-- `src/contexts/LiveForexContext.tsx`
-- `src/utils/concurrency.ts`
-
-Report the result inline. If new unrelated errors surface, list them but do not modify code in this task.
+Pushing the workflow file is the verification — it runs on the next push/PR. Locally, `npm run build` already exercises the same command.
 
 ## Out of scope
-Fixing any unrelated pre-existing type errors.
+Lint, tests, deployment, caching beyond npm, matrix node versions.
